@@ -5,6 +5,7 @@ export interface User {
   username: string;
   idNumber: string;
   accountNumber: string;
+  preferredCurrency?: string;
   phone?: string;
   mfaEnabled: boolean;
   createdAt: string;
@@ -52,14 +53,30 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface LoginResult {
+  user: User;
+  token: string;
+  message: string;
+}
+
 export interface RegisterRequest {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   idNumber: string;
   accountNumber: string;
+  preferredCurrency: string;
   username: string;
   password: string;
+  confirmPassword: string;
   email: string;
   phone?: string;
+}
+
+export interface RegisterResult {
+  success: boolean;
+  message: string;
+  customerId?: number;
+  username?: string;
 }
 
 export interface PaymentCreateRequest {

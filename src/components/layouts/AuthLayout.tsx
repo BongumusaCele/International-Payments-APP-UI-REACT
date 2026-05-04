@@ -16,7 +16,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitl
           <span>
             <CreditCard className="h-6 w-6" />
           </span>
-          <strong>PaymentApp</strong>
+          <strong>International Payments Portal</strong>
         </div>
 
         {(title || subtitle) && (

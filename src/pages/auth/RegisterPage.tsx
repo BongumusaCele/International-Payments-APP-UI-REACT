@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { CheckCircle2, ChevronDown } from 'lucide-react';
+import { CheckCircle2, ChevronDown, Eye, EyeOff } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAppDispatch';
 import { register, clearError } from '../../store/slices/authSlice';
 import { AuthLayout } from '../../components/layouts/AuthLayout';
@@ -30,6 +30,8 @@ export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const { loading, error } = useAppSelector((state) => state.auth);
   const [currentStep, setCurrentStep] = React.useState(0);
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
 
   const [formData, setFormData] = React.useState({
     firstName: '',
@@ -46,8 +48,6 @@ export const RegisterPage: React.FC = () => {
   });
 
   const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
-
-  const fullName = `${formData.firstName} ${formData.lastName}`.trim();
 
   const validateStep = (step = currentStep) => {
     const errors: Record<string, string> = {};
@@ -133,18 +133,21 @@ export const RegisterPage: React.FC = () => {
 
     const result = await dispatch(
       register({
-        fullName,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         email: formData.email,
         username: formData.username,
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
         idNumber: formData.idNumber.replace(/\s/g, ''),
         accountNumber: formData.accountNumber,
+        preferredCurrency: formData.preferredCurrency,
         phone: formData.phone,
       })
     );
 
     if (result.meta.requestStatus === 'fulfilled') {
-      navigate('/dashboard');
+      navigate('/login');
     }
   };
 
@@ -322,7 +325,7 @@ export const RegisterPage: React.FC = () => {
                 />
 
                 <Input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   label="Password"
                   name="password"
                   placeholder="Enter your password"
@@ -330,11 +333,21 @@ export const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   error={formErrors.password}
                   className="wizard-input"
+                  rightElement={
+                    <button
+                      type="button"
+                      className="password-toggle-button"
+                      onClick={() => setShowPassword((visible) => !visible)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  }
                   required
                 />
 
                 <Input
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   label="Confirm Password"
                   name="confirmPassword"
                   placeholder="Re-enter your password"
@@ -342,6 +355,16 @@ export const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   error={formErrors.confirmPassword}
                   className="wizard-input"
+                  rightElement={
+                    <button
+                      type="button"
+                      className="password-toggle-button"
+                      onClick={() => setShowConfirmPassword((visible) => !visible)}
+                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  }
                   required
                 />
               </div>

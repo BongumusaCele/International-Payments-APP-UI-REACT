@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAppDispatch';
 import { login, clearError } from '../../store/slices/authSlice';
 import { AuthLayout } from '../../components/layouts/AuthLayout';
@@ -11,12 +12,39 @@ export const LoginPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { loading, error } = useAppSelector((state) => state.auth);
-  const [username, setUsername] = React.useState('johndoe');
-  const [accountNumber, setAccountNumber] = React.useState('ACC001');
-  const [password, setPassword] = React.useState('password');
+  const [username, setUsername] = React.useState('');
+  const [accountNumber, setAccountNumber] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+
+    if (!username.trim()) errors.username = 'Username is required';
+    if (!accountNumber.trim()) errors.accountNumber = 'Account number is required';
+    else if (!/^\d+$/.test(accountNumber.trim())) errors.accountNumber = 'Account number must contain digits only';
+    if (!password) errors.password = 'Password is required';
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleFieldChange = (field: 'username' | 'accountNumber' | 'password', value: string) => {
+    if (field === 'username') setUsername(value);
+    if (field === 'accountNumber') setAccountNumber(value);
+    if (field === 'password') setPassword(value);
+
+    if (error) dispatch(clearError());
+    if (formErrors[field]) {
+      setFormErrors((prev) => ({ ...prev, [field]: '' }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     const result = await dispatch(
       login({ username, accountNumber, password })
     );
@@ -42,7 +70,8 @@ export const LoginPage: React.FC = () => {
           label="Username"
           placeholder="Enter your username"
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e) => handleFieldChange('username', e.target.value)}
+          error={formErrors.username}
           className="auth-input"
           required
         />
@@ -52,24 +81,33 @@ export const LoginPage: React.FC = () => {
           label="Account Number"
           placeholder="Enter your account number"
           value={accountNumber}
-          onChange={(e) => setAccountNumber(e.target.value)}
+          onChange={(e) => handleFieldChange('accountNumber', e.target.value)}
+          error={formErrors.accountNumber}
           className="auth-input"
+          inputMode="numeric"
           required
         />
 
         <Input
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           label="Password"
           placeholder="Enter your password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => handleFieldChange('password', e.target.value)}
+          error={formErrors.password}
           className="auth-input"
+          rightElement={
+            <button
+              type="button"
+              className="password-toggle-button"
+              onClick={() => setShowPassword((visible) => !visible)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          }
           required
         />
-
-        <div className="text-sm text-center">
-          <p className="text-gray-600 mb-2">Demo credentials: johndoe / ACC001 / password</p>
-        </div>
 
         <Button
           type="submit"

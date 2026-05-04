@@ -90,7 +90,7 @@ export const mockAuthApi = {
 
     const newUser: User = {
       id: `user-${Date.now()}`,
-      fullName: data.fullName,
+      fullName: `${data.firstName} ${data.lastName}`.trim(),
       email: data.email,
       username: data.username,
       idNumber: data.idNumber,

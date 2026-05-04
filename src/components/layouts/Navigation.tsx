@@ -8,11 +8,8 @@ import {
   Users,
   UserCircle,
   X,
-  Moon,
-  Sun,
 } from 'lucide-react';
-import { useAppSelector, useAppDispatch } from '../../hooks/useAppDispatch';
-import { toggleTheme } from '../../store/slices/themeSlice';
+import { useAppSelector } from '../../hooks/useAppDispatch';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -29,16 +26,10 @@ interface NavigationProps {
 
 export const Navigation: React.FC<NavigationProps> = ({ isOpen, onClose, onOpen }) => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-  const theme = useAppSelector((state) => state.theme.mode);
-  const dispatch = useAppDispatch();
 
   if (!isAuthenticated) {
     return null;
   }
-
-  const handleThemeToggle = () => {
-    dispatch(toggleTheme());
-  };
 
   const sidebar = (
     <aside className="flex h-full w-72 flex-col border-r border-slate-200 bg-white px-4 py-5 shadow-sm dark:border-slate-700 dark:bg-slate-950">
@@ -48,8 +39,10 @@ export const Navigation: React.FC<NavigationProps> = ({ isOpen, onClose, onOpen 
             <CreditCard className="h-6 w-6" />
           </span>
           <div>
-            <p className="text-lg font-black text-slate-950 dark:text-white">PaymentApp</p>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Operations</p>
+            <p className="text-base font-black leading-tight text-slate-950 dark:text-white">
+              International
+              <span className="block">Payments Portal</span>
+            </p>
           </div>
         </div>
         <button
@@ -86,24 +79,8 @@ export const Navigation: React.FC<NavigationProps> = ({ isOpen, onClose, onOpen 
         })}
       </nav>
 
-      <div className="space-y-3">
-        <button
-          type="button"
-          onClick={handleThemeToggle}
-          className="flex w-full items-center justify-between rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-          aria-label="Toggle theme"
-        >
-          <span>Theme</span>
-          {theme === 'light' ? (
-            <Moon className="h-5 w-5" />
-          ) : (
-            <Sun className="h-5 w-5" />
-          )}
-        </button>
-
-        <div className="rounded-3xl bg-slate-50 p-4 text-sm font-semibold leading-6 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
-          Manage beneficiaries, payments, and profile settings from one workspace.
-        </div>
+      <div className="rounded-3xl bg-slate-50 p-4 text-sm font-semibold leading-6 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+        Manage beneficiaries, payments, and profile settings from one workspace.
       </div>
     </aside>
   );

@@ -1,417 +1,395 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight,
-  BadgeCheck,
-  Building2,
+  BadgeDollarSign,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  CreditCard,
+  Clock3,
+  Contact,
+  FileCheck2,
+  Landmark,
   LockKeyhole,
   Mail,
-  ReceiptText,
-  Rocket,
+  MapPin,
+  Phone,
+  Plane,
   ShieldCheck,
-  Smartphone,
-  Sparkles,
-  WalletCards,
+  UserRound,
 } from 'lucide-react';
 
 const navItems = [
   { label: 'Home', href: '#home' },
-  { label: 'Platform', href: '#platform' },
-  { label: 'How it works', href: '#workflow' },
-  { label: 'Support', href: '#support' },
+  { label: 'Services', href: '#services' },
+  { label: 'How it works', href: '#how-it-works' },
+  { label: 'Security', href: '#security' },
+  { label: 'Contact Us', href: '#contact' },
 ];
 
-const stats = [
-  ['24/7', 'payment visibility'],
-  ['5+', 'supported currencies'],
-  ['100%', 'mock workflow coverage'],
+const heroBenefits = [
+  { label: 'Secure', value: 'Transaction', icon: LockKeyhole },
+  { label: 'Multiple', value: 'Currencies', icon: BadgeDollarSign },
+  { label: 'Real-Time', value: 'Tracking', icon: Clock3 },
+  { label: 'Fast', value: 'Processing', icon: Plane },
 ];
 
-const features = [
+const services = [
   {
-    title: 'Secure beneficiary records',
-    copy: 'Create trusted recipient profiles with account, bank, country, SWIFT, and currency details.',
+    title: 'International Payments',
+    copy: 'Send money securely to beneficiaries across multiple countries using trusted payment rails.',
+    icon: Plane,
+  },
+  {
+    title: 'Multiple Currencies',
+    copy: 'Choose from common currencies with ZAR as the primary starting point for South African customers.',
+    icon: Landmark,
+  },
+  {
+    title: 'Secure Transactions',
+    copy: 'Register, log in, and make payments through a focused portal designed around account verification.',
     icon: ShieldCheck,
   },
   {
-    title: 'Fast payment creation',
-    copy: 'Send payments from saved beneficiaries with amount, reference, and currency captured in one flow.',
-    icon: Rocket,
-  },
-  {
-    title: 'Status-led tracking',
-    copy: 'Follow pending, review, approved, rejected, and completed states from a single history view.',
-    icon: BadgeCheck,
+    title: 'Real-Time Tracking',
+    copy: 'Follow payment status from creation through review, approval, and completion.',
+    icon: Clock3,
   },
 ];
 
 const steps = [
   {
-    title: 'Create account',
-    copy: 'Register or sign in with the demo profile to access your dashboard.',
-    icon: WalletCards,
+    title: 'Create an Account',
+    copy: 'Register your personal, account, and security details to get started.',
+    icon: UserRound,
   },
   {
-    title: 'Add beneficiary',
-    copy: 'Store recipient bank details once and reuse them for future payments.',
-    icon: Building2,
+    title: 'Enter Payment Details',
+    copy: 'Select currency, enter amount, provider, recipient account, and SWIFT code.',
+    icon: BadgeDollarSign,
   },
   {
-    title: 'Track payment',
-    copy: 'Create payments and inspect their status, amount, date, and reference.',
-    icon: ReceiptText,
-  },
-];
-
-const testimonials = [
-  {
-    quote: 'The dashboard gives our finance team a cleaner place to prepare transfers and follow payment progress.',
-    name: 'David Smith',
-    role: 'Finance Lead',
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80',
+    title: 'Review & Confirm',
+    copy: 'Check recipient and payment information before submitting the transaction.',
+    icon: CheckCircle2,
   },
   {
-    quote: 'Beneficiary setup is simple, and the payment history makes every follow-up conversation easier.',
-    name: 'Alina Blake',
-    role: 'Operations Manager',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80',
+    title: 'We Process the Payment',
+    copy: 'Your payment is recorded and tracked through the portal workflow.',
+    icon: Plane,
   },
 ];
 
-const blogPosts = [
+const securityItems = [
   {
-    title: 'How payment references reduce reconciliation errors',
-    date: 'April 18, 2026',
-    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=900&q=80',
+    title: 'Data Encryption',
+    copy: 'Payment and account details are handled through secure API communication.',
+    icon: LockKeyhole,
   },
   {
-    title: 'What growing teams should track before sending transfers',
-    date: 'April 12, 2026',
-    image: 'https://images.unsplash.com/photo-1554224154-22dec7ec8818?auto=format&fit=crop&w=900&q=80',
+    title: 'Access Control',
+    copy: 'Login requires username, account number, and password verification.',
+    icon: Contact,
+  },
+  {
+    title: 'Verified Records',
+    copy: 'Registration checks unique username, account number, ID number, and email.',
+    icon: FileCheck2,
+  },
+  {
+    title: 'Secure Infrastructure',
+    copy: 'The portal is structured for protected routes and authenticated payment access.',
+    icon: ShieldCheck,
   },
 ];
 
 export const LandingPage: React.FC = () => {
   return (
-    <div className="landing-shell min-h-screen text-slate-950">
-      <header className="landing-nav">
-        <div className="landing-section flex items-center justify-between py-4">
-          <Link to="/" className="flex items-center gap-3 font-black text-slate-950">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-600 text-white">
-              <CreditCard className="h-6 w-6" />
-            </span>
-            <span className="text-xl">PaymentApp</span>
+    <div className="ipp-shell min-h-screen bg-[#e5fff1] text-slate-950">
+      <header className="ipp-header">
+        <div className="ipp-container flex items-center justify-between gap-6 py-5">
+          <Link to="/" className="ipp-brand">
+            International
+            <span>Payment Portal</span>
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
+          <nav className="hidden items-center gap-8 text-base font-medium text-white/88 lg:flex">
             {navItems.map((item) => (
-              <a key={item.label} href={item.href} className="hover:text-blue-600">
+              <a key={item.label} href={item.href} className="transition hover:text-blue-400">
                 {item.label}
               </a>
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
-            <Link to="/login" className="hidden rounded-full px-5 py-2.5 text-sm font-black text-slate-700 hover:text-blue-600 sm:inline-flex">
-              Sign in
-            </Link>
-            <Link to="/register" className="landing-cta px-5 py-2.5 text-sm">
-              Get started
-            </Link>
-          </div>
+          <Link to="/login" className="ipp-login-button">
+            Login
+          </Link>
         </div>
       </header>
 
       <main>
-        <section id="home" className="landing-section py-8 md:py-12">
-          <div className="hero-panel grid grid-cols-1 items-center gap-10 px-6 py-10 md:px-10 lg:grid-cols-[0.92fr_1.08fr] lg:px-14 lg:py-14">
-            <div className="hero-copy max-w-2xl">
-              <p className="landing-pill text-sm">
-                <Sparkles className="h-4 w-4" />
-                Secure digital payment workspace
-              </p>
-              <h1 className="mt-7 text-5xl font-black leading-[0.98] tracking-tight text-white md:text-7xl">
-                Manage payments with calm, confident control.
+        <section id="home" className="ipp-hero">
+          <div className="ipp-container ipp-hero-grid">
+            <div className="ipp-hero-copy">
+              <h1>
+                Send International
+                <span>Payments with</span>
+                <strong>Confidence</strong>
               </h1>
-              <p className="mt-7 max-w-xl text-lg leading-8 text-blue-50/78">
-                Build beneficiary records, create payments, and track every transfer from a clean operating dashboard.
+              <p>
+                Our secure portal helps South African customers send money to beneficiaries around the world.
+                Fast, reliable, and protected with practical account verification.
               </p>
-              <div className="mt-9 flex flex-wrap gap-4">
-                <Link to="/register" className="landing-cta">
-                  Create account
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link to="/dashboard" className="rounded-full border border-white/20 px-6 py-3 font-black text-white hover:border-cyan-200 hover:text-cyan-200">
-                  Open dashboard
-                </Link>
-              </div>
 
-              <div className="mt-12 grid max-w-xl grid-cols-3 gap-4">
-                {stats.map(([value, label]) => (
-                  <div key={label} className="rounded-3xl border border-white/12 bg-white/8 p-4 text-white backdrop-blur">
-                    <strong className="block text-2xl font-black">{value}</strong>
-                    <span className="mt-1 block text-xs font-semibold leading-5 text-blue-50/70">{label}</span>
-                  </div>
-                ))}
+              <div className="ipp-hero-actions">
+                <Link to="/register" className="ipp-primary-action">
+                  Create an Account
+                </Link>
+                <Link to="/login" className="ipp-secondary-action">
+                  Login to your Account
+                </Link>
               </div>
             </div>
 
-            <div className="hero-visual hero-dashboard">
-              <div className="dashboard-card">
-                <div className="dashboard-top">
-                  <div className="dashboard-dots">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
-                    Live
+            <div className="ipp-hero-art" aria-hidden="true">
+              <div className="ipp-globe">
+                <img
+                  src="https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?auto=format&fit=crop&w=1200&q=80"
+                  alt=""
+                />
+                <span className="ipp-orbit orbit-one" />
+                <span className="ipp-orbit orbit-two" />
+                <span className="ipp-orbit orbit-three" />
+              </div>
+              <div className="ipp-transfer-card">
+                <h2>Send Money Worldwide</h2>
+                <label htmlFor="landing-send">You send</label>
+                <div className="ipp-converter-row">
+                  <input id="landing-send" value="15 000" readOnly aria-label="Amount you send" />
+                  <span>
+                    <span className="ipp-currency-flag ipp-flag-za" aria-label="South Africa" />
+                    ZAR
                   </span>
                 </div>
-                <div className="dashboard-screen">
-                  <div className="dashboard-balance">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-blue-50/80">Total volume</span>
-                      <WalletCards className="h-6 w-6" />
+                <label htmlFor="landing-receive">Recipient gets</label>
+                <div className="ipp-converter-row">
+                  <input id="landing-receive" value="904,64" readOnly aria-label="Recipient amount" />
+                  <span>
+                    <span className="ipp-currency-flag ipp-flag-us" aria-label="United States" />
+                    USD
+                  </span>
+                </div>
+                <Link to="/register" className="ipp-card-action">
+                  Get Started
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="ipp-container">
+            <div className="ipp-benefit-strip">
+              {heroBenefits.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <div key={item.label} className="ipp-benefit">
+                    <Icon className="h-6 w-6" />
+                    <div>
+                      <strong>{item.label}</strong>
+                      <span>{item.value}</span>
                     </div>
-                    <strong>R7,500</strong>
-                    <p className="mt-4 text-sm font-semibold text-blue-50/80">Across ZAR payments</p>
                   </div>
-                  <div className="dashboard-bars">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                </div>
-              </div>
-
-              <div className="floating-card payment">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">Payment</span>
-                  <CreditCard className="h-5 w-5 text-blue-600" />
-                </div>
-                <strong className="mt-4 block text-2xl font-black text-slate-950">ZAR 5,000</strong>
-                <p className="mt-2 text-sm font-semibold text-slate-500">Jane Smith - REF-001</p>
-              </div>
-
-              <div className="floating-card approved">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-100 text-emerald-700">
-                  <CheckCircle2 className="h-6 w-6" />
-                </span>
-                <div>
-                  <strong className="block text-sm font-black text-slate-950">Approved</strong>
-                  <span className="text-xs font-semibold text-slate-500">Ready for review</span>
-                </div>
-              </div>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        <section id="platform" className="landing-section py-20">
-          <div className="section-heading">
-            <p className="text-sm font-black uppercase tracking-[0.24em] text-blue-600">Platform</p>
-            <h2 className="mt-4 text-4xl font-black tracking-tight md:text-5xl">
-              Designed for repeatable payment operations.
-            </h2>
-            <p className="mt-5 text-lg leading-8 text-slate-600">
-              The interface keeps setup, creation, review, and tracking close together without changing the current app workflow.
-            </p>
-          </div>
+        <section id="services" className="ipp-services">
+          <div className="ipp-container">
+            <div className="ipp-section-heading">
+              <p>Our Services</p>
+              <h2>Everything you need for international payments</h2>
+              <span>Simple, secure, and efficient tools designed for cross-border transfers.</span>
+            </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
-            {features.map((feature) => {
-              const Icon = feature.icon;
+            <div className="ipp-service-grid">
+              {services.map((service) => {
+                const Icon = service.icon;
 
-              return (
-                <article key={feature.title} className="feature-card">
-                  <div className="feature-icon">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="mt-6 text-2xl font-black tracking-tight">{feature.title}</h3>
-                  <p className="mt-4 leading-7 text-slate-600">{feature.copy}</p>
-                </article>
-              );
-            })}
+                return (
+                  <article key={service.title} className="ipp-service-card">
+                    <div>
+                      <Icon className="h-7 w-7" />
+                    </div>
+                    <h3>{service.title}</h3>
+                    <p>{service.copy}</p>
+                  </article>
+                );
+              })}
+            </div>
           </div>
         </section>
 
-        <section className="bg-white py-20">
-          <div className="landing-section grid grid-cols-1 items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="soft-card p-8 md:p-10">
-              <div className="rounded-[2rem] bg-slate-950 p-5 text-white">
-                <div className="flex items-center justify-between">
-                  <span className="font-black">Payment health</span>
-                  <LockKeyhole className="h-5 w-5 text-cyan-300" />
-                </div>
-                <div className="mt-8 grid grid-cols-2 gap-4">
-                  <div className="rounded-3xl bg-white/10 p-4">
-                    <span className="text-sm text-white/60">Pending</span>
-                    <strong className="mt-2 block text-3xl font-black">2</strong>
-                  </div>
-                  <div className="rounded-3xl bg-cyan-300 p-4 text-slate-950">
-                    <span className="text-sm font-bold">Completed</span>
-                    <strong className="mt-2 block text-3xl font-black">14</strong>
-                  </div>
-                </div>
-                <div className="mt-5 rounded-3xl bg-white p-4 text-slate-950">
-                  <div className="flex items-center gap-3">
-                    <span className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-blue-600">
-                      <Smartphone className="h-6 w-6" />
-                    </span>
-                    <div>
-                      <strong className="block">Beneficiary ready</strong>
-                      <span className="text-sm text-slate-500">Global Bank - GLBKZAJJ</span>
+        <section id="how-it-works" className="ipp-steps-section">
+          <div className="ipp-container">
+            <div className="ipp-section-heading">
+              <p>How It Works</p>
+              <h2>Send money in just a few simple steps</h2>
+            </div>
+
+            <div className="ipp-step-grid">
+              {steps.map((step, index) => {
+                const Icon = step.icon;
+
+                return (
+                  <article key={step.title} className="ipp-step-card">
+                    <span className="ipp-step-number">{index + 1}</span>
+                    <div className="ipp-step-icon">
+                      <Icon className="h-9 w-9" />
                     </div>
-                  </div>
-                </div>
+                    <h3>{step.title}</h3>
+                    <p>{step.copy}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section id="security" className="ipp-security">
+          <div className="ipp-container ipp-security-grid">
+            <div className="ipp-lock-visual" aria-hidden="true">
+              <div className="ipp-lock-body">
+                <LockKeyhole className="h-28 w-28" />
               </div>
             </div>
 
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.24em] text-blue-600">Why it works</p>
-              <h2 className="mt-4 text-4xl font-black tracking-tight md:text-5xl">
-                Less visual clutter, more operational clarity.
-              </h2>
-              <p className="mt-5 text-lg leading-8 text-slate-600">
-                A softer visual system makes the landing page feel closer to a polished Figma marketing design while leaving the authenticated product untouched.
+              <p className="ipp-green-kicker">Security</p>
+              <h2>Your security is our priority</h2>
+              <p className="ipp-security-copy">
+                We use account verification, authenticated sessions, and secure backend validation to help keep
+                customer details and payment activity protected.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                {['Mobile wallet', 'High security', 'Fast setup', 'Support ready'].map((item) => (
-                  <span key={item} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700">
-                    {item}
-                  </span>
-                ))}
+
+              <div className="ipp-security-list">
+                {securityItems.map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <article key={item.title}>
+                      <Icon className="h-7 w-7" />
+                      <h3>{item.title}</h3>
+                      <p>{item.copy}</p>
+                    </article>
+                  );
+                })}
               </div>
             </div>
           </div>
         </section>
 
-        <section id="workflow" className="landing-section py-20">
-          <div className="section-heading">
-            <p className="text-sm font-black uppercase tracking-[0.24em] text-blue-600">Workflow</p>
-            <h2 className="mt-4 text-4xl font-black tracking-tight md:text-5xl">How PaymentApp works</h2>
-          </div>
+        <section id="contact" className="ipp-contact">
+          <div className="ipp-container ipp-contact-grid">
+            <div>
+              <p className="ipp-blue-kicker">Contact Us</p>
+              <h2>We're here to help</h2>
+              <p className="ipp-contact-intro">
+                Have a question or need assistance? Fill out the form and our team will get back to you.
+              </p>
 
-          <div className="workflow-line mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
-            {steps.map((step, index) => {
-              const Icon = step.icon;
-
-              return (
-                <article key={step.title} className="soft-card relative p-7 text-center">
-                  <div className="mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-blue-600 text-white">
-                    <Icon className="h-7 w-7" />
-                  </div>
-                  <span className="mx-auto mt-5 block w-fit rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">
-                    Step {index + 1}
-                  </span>
-                  <h3 className="mt-4 text-xl font-black">{step.title}</h3>
-                  <p className="mt-3 leading-7 text-slate-600">{step.copy}</p>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section id="support" className="bg-white py-20">
-          <div className="landing-section">
-            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-              <div>
-                <p className="text-sm font-black uppercase tracking-[0.24em] text-blue-600">Feedback</p>
-                <h2 className="mt-4 max-w-2xl text-4xl font-black tracking-tight md:text-5xl">What our clients say</h2>
-              </div>
-              <div className="flex gap-3">
-                <button className="grid h-11 w-11 place-items-center rounded-full border border-slate-200 text-slate-600" aria-label="Previous testimonial">
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                <button className="grid h-11 w-11 place-items-center rounded-full bg-blue-600 text-white" aria-label="Next testimonial">
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2">
-              {testimonials.map((testimonial) => (
-                <article key={testimonial.name} className="soft-card p-7">
-                  <p className="text-lg leading-8 text-slate-600">{testimonial.quote}</p>
-                  <div className="mt-8 flex items-center gap-4">
-                    <img
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      className="h-16 w-16 rounded-full object-cover"
-                    />
-                    <div>
-                      <h3 className="font-black">{testimonial.name}</h3>
-                      <p className="text-sm font-semibold text-slate-500">{testimonial.role}</p>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="landing-section py-20">
-          <div className="section-heading">
-            <p className="text-sm font-black uppercase tracking-[0.24em] text-blue-600">Insights</p>
-            <h2 className="mt-4 text-4xl font-black tracking-tight md:text-5xl">Read our blog</h2>
-          </div>
-          <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
-            {blogPosts.map((post) => (
-              <article key={post.title} className="feature-card p-4">
-                <img src={post.image} alt="" className="blog-image" />
-                <div className="p-3">
-                  <p className="mt-2 text-sm font-bold text-blue-600">{post.date}</p>
-                  <h3 className="mt-3 text-2xl font-black leading-tight">{post.title}</h3>
+              <div className="ipp-contact-list">
+                <div>
+                  <Mail className="h-7 w-7" />
+                  <p>
+                    <strong>Email</strong>
+                    support@internationalpayment.co.za
+                  </p>
                 </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="landing-section pb-20">
-          <div className="newsletter-panel px-6 py-14 text-white md:px-12">
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-sm font-black uppercase tracking-[0.24em] text-cyan-200">Newsletter</p>
-              <h2 className="mt-4 text-4xl font-black tracking-tight md:text-5xl">Join our payment updates</h2>
-              <p className="mx-auto mt-5 max-w-xl leading-7 text-blue-50/70">
-                Get product updates, payment workflow tips, and security notes from PaymentApp.
-              </p>
-              <form className="mx-auto mt-8 flex max-w-lg rounded-full bg-white p-2" onSubmit={(e) => e.preventDefault()}>
-                <label htmlFor="newsletter-email" className="sr-only">Email</label>
-                <input
-                  id="newsletter-email"
-                  type="email"
-                  placeholder="Your email"
-                  className="min-w-0 flex-1 rounded-full px-5 text-slate-950 outline-none"
-                />
-                <button className="landing-cta px-5 py-3" aria-label="Subscribe">
-                  <Mail className="h-5 w-5" />
-                </button>
-              </form>
+                <div>
+                  <Phone className="h-7 w-7" />
+                  <p>
+                    <strong>Phone</strong>
+                    +27 01 125 3656
+                  </p>
+                </div>
+                <div>
+                  <MapPin className="h-7 w-7" />
+                  <p>
+                    <strong>Address</strong>
+                    1 Dingle Street, Waterfront
+                    <span>Cape Town, 8001</span>
+                    <span>South Africa</span>
+                  </p>
+                </div>
+              </div>
             </div>
+
+            <form className="ipp-contact-form" onSubmit={(e) => e.preventDefault()}>
+              <div className="ipp-contact-name-row">
+                <label>
+                  First Name
+                  <input type="text" />
+                </label>
+                <label>
+                  Last Name
+                  <input type="text" />
+                </label>
+              </div>
+              <label>
+                Email Address
+                <input type="email" />
+              </label>
+              <label>
+                Subject
+                <input type="text" />
+              </label>
+              <label>
+                Message
+                <textarea rows={3} />
+              </label>
+              <button type="submit">Send Message</button>
+            </form>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white py-10">
-        <div className="landing-section flex flex-col justify-between gap-6 text-sm text-slate-500 md:flex-row md:items-center">
-          <div className="flex items-center gap-3 font-black text-slate-950">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-blue-600 text-white">
-              <CreditCard className="h-5 w-5" />
-            </span>
-            PaymentApp
+      <footer className="ipp-footer">
+        <div className="ipp-container ipp-footer-grid">
+          <div>
+            <h2>
+              International
+              <span>Payment Portal</span>
+            </h2>
+            <p>A secure and reliable portal for sending international payments worldwide.</p>
           </div>
-          <p>Copyright 2026 PaymentApp. All rights reserved.</p>
-          <div className="flex gap-5 font-bold">
-            <a href="#home" className="hover:text-blue-600">Home</a>
-            <Link to="/login" className="hover:text-blue-600">Sign in</Link>
-            <Link to="/register" className="hover:text-blue-600">Register</Link>
+
+          <div>
+            <h3>Quick Links</h3>
+            {navItems.map((item) => (
+              <a key={item.label} href={item.href}>{item.label}</a>
+            ))}
+          </div>
+
+          <div>
+            <h3>Support</h3>
+            <a href="#contact">FAQs</a>
+            <a href="#contact">User Guide</a>
+            <a href="#contact">Support Center</a>
+          </div>
+
+          <div>
+            <h3>Legal</h3>
+            <a href="#contact">Terms & Conditions</a>
+            <a href="#contact">Privacy Policy</a>
+          </div>
+
+          <div>
+            <h3>Get In Touch</h3>
+            <p>support@payment.co.za</p>
+            <p>+27 01 125 3656</p>
+            <p>1 Dingle Street, Waterfront Cape Town, 8001 South Africa</p>
           </div>
         </div>
+        <div className="ipp-container ipp-footer-line" />
       </footer>
     </div>
   );
