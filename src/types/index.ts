@@ -28,6 +28,7 @@ export interface Beneficiary {
   swiftCode: string;
   country: string;
   currency?: string;
+  currencyId?: string;
   createdAt?: string;
 }
 
@@ -43,6 +44,8 @@ export interface Payment {
   id: string;
   amount: number;
   currency: string;
+  convertedAmount?: number;
+  toCurrency?: string;
   beneficiaryId?: string;
   beneficiaryName: string;
   provider: string;
@@ -98,10 +101,22 @@ export interface RegisterResult {
 export interface PaymentCreateRequest {
   amount: number;
   currency: string;
+  beneficiaryId: string;
   provider: string;
   recipientName: string;
   recipientAccountNumber: string;
   recipientBankName: string;
   swiftCode: string;
   paymentReference: string;
+  paymentReason?: string;
+}
+
+export interface PaymentSummary {
+  totalPayments: number;
+  totalAmount: number;
+  pendingCount: number;
+  underReviewCount: number;
+  approvedCount: number;
+  rejectedCount: number;
+  completedCount: number;
 }

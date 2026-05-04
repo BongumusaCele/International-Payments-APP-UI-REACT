@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppSelector, useAppDispatch } from '../../hooks/useAppDispatch';
-import { fetchPayments } from '../../store/slices/paymentSlice';
+import { fetchPayments, fetchPaymentSummary } from '../../store/slices/paymentSlice';
 import { MainLayout } from '../../components/layouts/MainLayout';
 import { Card } from '../../components/ui/Card';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
@@ -11,22 +11,24 @@ import { ArrowRight, Plus } from 'lucide-react';
 export const DashboardPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
-  const { items: payments, loading } = useAppSelector((state) => state.payments);
+  const { items: payments, loading, summary } = useAppSelector((state) => state.payments);
 
   React.useEffect(() => {
     if (user?.id) {
       dispatch(fetchPayments(user.id));
+      dispatch(fetchPaymentSummary(user.id));
     }
   }, [user?.id, dispatch]);
 
   const recentPayments = payments.slice(0, 5);
-  const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
+  const totalPayments = summary?.totalPayments ?? payments.length;
+  const totalAmount = summary?.totalAmount ?? payments.reduce((sum, p) => sum + p.amount, 0);
   const formattedTotalAmount = new Intl.NumberFormat('en-ZA', {
     style: 'currency',
     currency: 'ZAR',
   }).format(totalAmount);
-  const pendingCount = payments.filter((p) => p.status === 'Pending').length;
-  const completedCount = payments.filter((p) => p.status === 'Completed').length;
+  const pendingCount = summary?.pendingCount ?? payments.filter((p) => p.status === 'Pending').length;
+  const completedCount = summary?.completedCount ?? payments.filter((p) => p.status === 'Completed').length;
 
   return (
     <MainLayout>
@@ -38,7 +40,7 @@ export const DashboardPage: React.FC = () => {
           <Card>
             <div className="text-center">
               <p className="text-gray-600 text-sm mb-2">Total Payments</p>
-              <p className="text-3xl font-bold text-blue-900">{payments.length}</p>
+              <p className="text-3xl font-bold text-blue-900">{totalPayments}</p>
             </div>
           </Card>
 

@@ -2,13 +2,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../hooks/useAppDispatch';
 import { createPayment } from '../../store/slices/paymentSlice';
+import { fetchBeneficiaries } from '../../store/slices/beneficiarySlice';
 import { MainLayout } from '../../components/layouts/MainLayout';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Alert } from '../../components/ui/Alert';
 
-const currencies = ['ZAR', 'USD', 'EUR', 'GBP', 'JPY', 'CAD'];
 const paymentProviders = ['SWIFT', 'Bank Transfer', 'EFT'];
 
 export const CreatePaymentPage: React.FC = () => {
@@ -16,10 +16,16 @@ export const CreatePaymentPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.auth);
   const { loading: paymentLoading, error: paymentError } = useAppSelector((state) => state.payments);
+  const {
+    items: beneficiaries,
+    loading: beneficiariesLoading,
+    error: beneficiariesError,
+  } = useAppSelector((state) => state.beneficiaries);
 
   const [formData, setFormData] = React.useState({
     amount: '',
-    currency: 'ZAR',
+    currency: user?.preferredCurrency || 'ZAR',
+    beneficiaryId: '',
     provider: 'SWIFT',
     recipientName: '',
     recipientAccountNumber: '',
@@ -30,6 +36,14 @@ export const CreatePaymentPage: React.FC = () => {
 
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
+  React.useEffect(() => {
+    if (user?.id) {
+      dispatch(fetchBeneficiaries(user.id));
+    }
+  }, [dispatch, user?.id]);
+
+  const selectedBeneficiary = beneficiaries.find((beneficiary) => beneficiary.id === formData.beneficiaryId);
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     const swiftCode = formData.swiftCode.trim().toUpperCase();
@@ -38,7 +52,7 @@ export const CreatePaymentPage: React.FC = () => {
     else if (isNaN(Number(formData.amount)) || Number(formData.amount) <= 0) {
       newErrors.amount = 'Amount must be a positive number';
     }
-    if (!formData.currency) newErrors.currency = 'Currency is required';
+    if (!formData.beneficiaryId) newErrors.beneficiaryId = 'Select a beneficiary';
     if (!formData.provider) newErrors.provider = 'Payment provider is required';
     if (!formData.recipientName.trim()) newErrors.recipientName = 'Recipient name is required';
     if (!formData.recipientAccountNumber.trim()) newErrors.recipientAccountNumber = 'Account number is required';
@@ -56,6 +70,29 @@ export const CreatePaymentPage: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
+    if (name === 'beneficiaryId') {
+      const beneficiary = beneficiaries.find((item) => item.id === value);
+      setFormData((prev) => ({
+        ...prev,
+        beneficiaryId: value,
+        currency: beneficiary?.currency || user?.preferredCurrency || prev.currency,
+        recipientName: beneficiary?.name || '',
+        recipientAccountNumber: beneficiary?.accountNumber || '',
+        recipientBankName: beneficiary?.bankName || '',
+        swiftCode: beneficiary?.swiftCode || '',
+      }));
+      setErrors((prev) => ({
+        ...prev,
+        beneficiaryId: '',
+        recipientName: '',
+        recipientAccountNumber: '',
+        recipientBankName: '',
+        swiftCode: '',
+      }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -80,6 +117,7 @@ export const CreatePaymentPage: React.FC = () => {
         data: {
           amount: Number(formData.amount),
           currency: formData.currency,
+          beneficiaryId: formData.beneficiaryId,
           provider: formData.provider,
           recipientName: formData.recipientName,
           recipientAccountNumber: formData.recipientAccountNumber,
@@ -101,16 +139,26 @@ export const CreatePaymentPage: React.FC = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-blue-900">Make a Payment</h1>
           <p className="mt-2 text-gray-600">
-            Enter the payment amount, select a provider, then add the recipient account and SWIFT details.
+            Select a saved beneficiary, enter the amount, and submit the payment for processing.
           </p>
         </div>
 
         <Card>
+          {beneficiariesError && (
+            <Alert type="error" message={beneficiariesError} />
+          )}
+
           {paymentError && (
             <Alert
               type="error"
               message={paymentError}
-              onClose={() => window.location.reload()}
+            />
+          )}
+
+          {!beneficiariesLoading && beneficiaries.length === 0 && (
+            <Alert
+              type="warning"
+              message="Add a beneficiary before creating a payment."
             />
           )}
 
@@ -132,24 +180,28 @@ export const CreatePaymentPage: React.FC = () => {
                 />
 
                 <div className="form-group">
-                  <label htmlFor="currency" className="form-label">
-                    Currency
+                  <label htmlFor="beneficiaryId" className="form-label">
+                    Beneficiary
                   </label>
                   <select
-                    id="currency"
-                    name="currency"
-                    value={formData.currency}
+                    id="beneficiaryId"
+                    name="beneficiaryId"
+                    value={formData.beneficiaryId}
                     onChange={handleChange}
-                    className={`input-base ${errors.currency ? 'border-red-500' : ''}`}
+                    className={`input-base ${errors.beneficiaryId ? 'border-red-500' : ''}`}
+                    disabled={beneficiariesLoading || beneficiaries.length === 0}
                     required
                   >
-                    {currencies.map((currency) => (
-                      <option key={currency} value={currency}>
-                        {currency}
+                    <option value="">
+                      {beneficiariesLoading ? 'Loading beneficiaries...' : 'Select beneficiary'}
+                    </option>
+                    {beneficiaries.map((beneficiary) => (
+                      <option key={beneficiary.id} value={beneficiary.id}>
+                        {beneficiary.name} - {beneficiary.bankName}
                       </option>
                     ))}
                   </select>
-                  {errors.currency && <p className="form-error">{errors.currency}</p>}
+                  {errors.beneficiaryId && <p className="form-error">{errors.beneficiaryId}</p>}
                 </div>
 
                 <div className="form-group md:col-span-2">
@@ -172,6 +224,13 @@ export const CreatePaymentPage: React.FC = () => {
                   </select>
                   {errors.provider && <p className="form-error">{errors.provider}</p>}
                 </div>
+
+                <div className="form-group md:col-span-2">
+                  <label className="form-label">Payment Currency</label>
+                  <div className="input-base bg-gray-50">
+                    {selectedBeneficiary?.currency || user?.preferredCurrency || formData.currency}
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -186,6 +245,7 @@ export const CreatePaymentPage: React.FC = () => {
                   value={formData.recipientName}
                   onChange={handleChange}
                   error={errors.recipientName}
+                  disabled
                   required
                 />
 
@@ -197,6 +257,7 @@ export const CreatePaymentPage: React.FC = () => {
                   value={formData.recipientAccountNumber}
                   onChange={handleChange}
                   error={errors.recipientAccountNumber}
+                  disabled
                   required
                 />
 
@@ -208,6 +269,7 @@ export const CreatePaymentPage: React.FC = () => {
                   value={formData.recipientBankName}
                   onChange={handleChange}
                   error={errors.recipientBankName}
+                  disabled
                   required
                 />
 
@@ -220,6 +282,7 @@ export const CreatePaymentPage: React.FC = () => {
                   onChange={handleChange}
                   error={errors.swiftCode}
                   maxLength={11}
+                  disabled
                   required
                 />
 
@@ -251,6 +314,7 @@ export const CreatePaymentPage: React.FC = () => {
                 type="submit"
                 variant="primary"
                 isLoading={paymentLoading}
+                disabled={beneficiariesLoading || beneficiaries.length === 0}
                 className="flex-1"
               >
                 Pay Now

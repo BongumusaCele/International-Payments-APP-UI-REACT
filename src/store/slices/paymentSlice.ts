@@ -1,35 +1,44 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { Payment, PaymentCreateRequest } from '../../types';
-import { mockPaymentApi } from '../../services/mockApi';
+import { Payment, PaymentCreateRequest, PaymentSummary } from '../../types';
+import { paymentApi } from '../../services/paymentApi';
 
 interface PaymentState {
   items: Payment[];
   selectedPayment: Payment | null;
+  summary: PaymentSummary | null;
   loading: boolean;
   error: string | null;
 }
 
 export const fetchPayments = createAsyncThunk('payments/fetchPayments', async (userId: string) => {
-  return await mockPaymentApi.getPayments(userId);
+  return await paymentApi.getPayments(userId);
 });
 
 export const fetchPaymentById = createAsyncThunk(
   'payments/fetchPaymentById',
   async ({ userId, paymentId }: { userId: string; paymentId: string }) => {
-    return await mockPaymentApi.getPaymentById(userId, paymentId);
+    return await paymentApi.getPaymentById(userId, paymentId);
   }
 );
 
 export const createPayment = createAsyncThunk(
   'payments/createPayment',
   async ({ userId, data }: { userId: string; data: PaymentCreateRequest }) => {
-    return await mockPaymentApi.createPayment(userId, data);
+    return await paymentApi.createPayment(userId, data);
+  }
+);
+
+export const fetchPaymentSummary = createAsyncThunk(
+  'payments/fetchPaymentSummary',
+  async (userId: string) => {
+    return await paymentApi.getPaymentSummary(userId);
   }
 );
 
 const initialState: PaymentState = {
   items: [],
   selectedPayment: null,
+  summary: null,
   loading: false,
   error: null,
 };
@@ -77,10 +86,17 @@ const paymentSlice = createSlice({
       .addCase(createPayment.fulfilled, (state, action) => {
         state.loading = false;
         state.items.push(action.payload);
+        state.summary = null;
       })
       .addCase(createPayment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to create payment';
+      })
+      .addCase(fetchPaymentSummary.fulfilled, (state, action) => {
+        state.summary = action.payload;
+      })
+      .addCase(fetchPaymentSummary.rejected, (state, action) => {
+        state.error = action.error.message || state.error;
       });
   },
 });

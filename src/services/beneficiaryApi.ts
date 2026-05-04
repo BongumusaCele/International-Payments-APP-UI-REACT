@@ -11,11 +11,13 @@ const authHeaders = (): Record<string, string> => {
 interface ApiBeneficiaryResponse {
   beneficiary_Id: number;
   customer_Id: number;
+  currency_Id?: number;
+  currency_Code?: string;
   beneficiary_Name: string;
   bank_Name: string;
   account_Number: string;
-  swift_Code: string;
-  country: string;
+  swift_Code?: string;
+  country?: string;
 }
 
 interface ApiMutationResponse {
@@ -80,8 +82,10 @@ const mapBeneficiary = (beneficiary: ApiBeneficiaryResponse): Beneficiary => ({
   name: beneficiary.beneficiary_Name,
   accountNumber: String(beneficiary.account_Number),
   bankName: beneficiary.bank_Name,
-  swiftCode: beneficiary.swift_Code,
-  country: beneficiary.country,
+  swiftCode: beneficiary.swift_Code || '',
+  country: beneficiary.country || '',
+  currency: beneficiary.currency_Code,
+  currencyId: beneficiary.currency_Id ? String(beneficiary.currency_Id) : undefined,
 });
 
 const toApiPayload = (customerId: string, data: BeneficiaryRequest) => ({
