@@ -26,8 +26,16 @@ export interface Beneficiary {
   bankName: string;
   swiftCode: string;
   country: string;
-  currency: string;
-  createdAt: string;
+  currency?: string;
+  createdAt?: string;
+}
+
+export interface BeneficiaryRequest {
+  name: string;
+  accountNumber: string;
+  bankName: string;
+  swiftCode: string;
+  country: string;
 }
 
 export interface Payment {

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { Beneficiary } from '../../types';
-import { mockBeneficiaryApi } from '../../services/mockApi';
+import { Beneficiary, BeneficiaryRequest } from '../../types';
+import { beneficiaryApi } from '../../services/beneficiaryApi';
 
 interface BeneficiaryState {
   items: Beneficiary[];
@@ -11,36 +11,34 @@ interface BeneficiaryState {
 export const fetchBeneficiaries = createAsyncThunk(
   'beneficiaries/fetchBeneficiaries',
   async (userId: string) => {
-    return await mockBeneficiaryApi.getBeneficiaries(userId);
+    return await beneficiaryApi.getBeneficiaries(userId);
   }
 );
 
 export const addBeneficiary = createAsyncThunk(
   'beneficiaries/addBeneficiary',
-  async ({ userId, data }: { userId: string; data: Omit<Beneficiary, 'id' | 'createdAt'> }) => {
-    return await mockBeneficiaryApi.addBeneficiary(userId, data);
+  async ({ userId, data }: { userId: string; data: BeneficiaryRequest }) => {
+    return await beneficiaryApi.addBeneficiary(userId, data);
   }
 );
 
 export const updateBeneficiary = createAsyncThunk(
   'beneficiaries/updateBeneficiary',
   async ({
-    userId,
     beneficiaryId,
     data,
   }: {
-    userId: string;
     beneficiaryId: string;
-    data: Partial<Beneficiary>;
+    data: BeneficiaryRequest;
   }) => {
-    return await mockBeneficiaryApi.updateBeneficiary(userId, beneficiaryId, data);
+    return await beneficiaryApi.updateBeneficiary(beneficiaryId, data);
   }
 );
 
 export const deleteBeneficiary = createAsyncThunk(
   'beneficiaries/deleteBeneficiary',
-  async ({ userId, beneficiaryId }: { userId: string; beneficiaryId: string }) => {
-    await mockBeneficiaryApi.deleteBeneficiary(userId, beneficiaryId);
+  async (beneficiaryId: string) => {
+    await beneficiaryApi.deleteBeneficiary(beneficiaryId);
     return beneficiaryId;
   }
 );
@@ -63,6 +61,7 @@ const beneficiarySlice = createSlice({
     builder
       .addCase(fetchBeneficiaries.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchBeneficiaries.fulfilled, (state, action) => {
         state.loading = false;
@@ -72,25 +71,43 @@ const beneficiarySlice = createSlice({
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch beneficiaries';
       })
+      .addCase(addBeneficiary.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(addBeneficiary.fulfilled, (state, action) => {
+        state.loading = false;
         state.items.push(action.payload);
       })
       .addCase(addBeneficiary.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.error.message || 'Failed to add beneficiary';
       })
+      .addCase(updateBeneficiary.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(updateBeneficiary.fulfilled, (state, action) => {
+        state.loading = false;
         const index = state.items.findIndex((b) => b.id === action.payload.id);
         if (index !== -1) {
           state.items[index] = action.payload;
         }
       })
       .addCase(updateBeneficiary.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.error.message || 'Failed to update beneficiary';
       })
+      .addCase(deleteBeneficiary.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(deleteBeneficiary.fulfilled, (state, action) => {
+        state.loading = false;
         state.items = state.items.filter((b) => b.id !== action.payload);
       })
       .addCase(deleteBeneficiary.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.error.message || 'Failed to delete beneficiary';
       });
   },

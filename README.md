@@ -99,8 +99,8 @@ npm run typecheck
 
 ## How Data Works
 
-- Authentication and registration call the configured backend API.
-- Payments, beneficiaries, and profile actions currently use in-memory mock data from `src/services/mockApi.ts`.
+- Authentication, registration, and beneficiary management call the configured backend API.
+- Payments and profile actions currently use in-memory mock data from `src/services/mockApi.ts`.
 - Auth state is stored in browser `localStorage`, so signing out or clearing site data resets the session.
 
 ## Environment Variables
