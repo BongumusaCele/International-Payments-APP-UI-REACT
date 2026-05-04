@@ -15,6 +15,7 @@ export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   token: string | null;
+  mfaChallengeId: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -62,9 +63,16 @@ export interface LoginRequest {
 }
 
 export interface LoginResult {
-  user: User;
-  token: string;
+  user?: User;
+  token?: string;
   message: string;
+  requiresMfa: boolean;
+  mfaChallengeId?: string;
+}
+
+export interface VerifyMfaRequest {
+  mfaChallengeId: string;
+  otpCode: string;
 }
 
 export interface RegisterRequest {

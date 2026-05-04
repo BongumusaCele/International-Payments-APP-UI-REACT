@@ -113,6 +113,30 @@ Vite only exposes environment variables that start with `VITE_`.
 
 If `.env` is missing, the app falls back to the Azure API URL defined in `src/services/authApi.ts`.
 
+## Authentication And MFA
+
+The backend login flow uses email MFA:
+
+1. Submit username, account number, and password.
+2. The backend emails a 6-digit verification code.
+3. Submit the code to complete login and receive a bearer session token.
+4. Protected API requests include the token in the `Authorization` header.
+
+For production, configure SMTP settings on the backend App Service:
+
+```text
+Email__SmtpHost
+Email__SmtpPort
+Email__Username
+Email__Password
+Email__FromAddress
+Email__FromName
+Email__EnableSsl
+Email__EnableSending=true
+```
+
+If `Email__EnableSending` is false, the backend logs the OTP instead of sending email. Use that only for local development.
+
 ## Troubleshooting
 
 ### Port 5173 is already in use

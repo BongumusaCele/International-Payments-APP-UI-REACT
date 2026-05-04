@@ -3,6 +3,11 @@ import { Beneficiary, BeneficiaryRequest } from '../types';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
   || 'https://international-payments-api-effxgrgvhwg3afgq.southafricanorth-01.azurewebsites.net';
 
+const authHeaders = (): Record<string, string> => {
+  const token = sessionStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 interface ApiBeneficiaryResponse {
   beneficiary_Id: number;
   customer_Id: number;
@@ -90,7 +95,9 @@ const toApiPayload = (customerId: string, data: BeneficiaryRequest) => ({
 
 export const beneficiaryApi = {
   getBeneficiaries: async (customerId: string): Promise<Beneficiary[]> => {
-    const response = await fetch(`${API_BASE_URL}/api/Beneficiary/customer/${ensureNumericId(customerId, 'Customer ID')}`);
+    const response = await fetch(`${API_BASE_URL}/api/Beneficiary/customer/${ensureNumericId(customerId, 'Customer ID')}`, {
+      headers: authHeaders(),
+    });
 
     if (!response.ok) {
       throw new Error(await readErrorMessage(response));
@@ -105,6 +112,7 @@ export const beneficiaryApi = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders(),
       },
       body: JSON.stringify(toApiPayload(customerId, data)),
     });
@@ -135,6 +143,7 @@ export const beneficiaryApi = {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders(),
       },
       body: JSON.stringify({
         beneficiary_Name: data.name.trim(),
@@ -165,6 +174,7 @@ export const beneficiaryApi = {
   deleteBeneficiary: async (beneficiaryId: string): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/api/Beneficiary/delete/${ensureNumericId(beneficiaryId, 'Beneficiary ID')}`, {
       method: 'DELETE',
+      headers: authHeaders(),
     });
 
     if (!response.ok) {

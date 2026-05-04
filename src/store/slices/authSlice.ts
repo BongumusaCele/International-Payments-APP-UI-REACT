@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { User, AuthState, LoginRequest, RegisterRequest } from '../../types';
+import { User, AuthState, LoginRequest, RegisterRequest, VerifyMfaRequest } from '../../types';
 import { mockUserApi } from '../../services/mockApi';
 import { authApi } from '../../services/authApi';
 
@@ -7,8 +7,22 @@ export const login = createAsyncThunk(
   'auth/login',
   async (credentials: LoginRequest) => {
     const response = await authApi.login(credentials);
-    localStorage.setItem('token', response.token);
-    localStorage.setItem('user', JSON.stringify(response.user));
+    if (response.token && response.user) {
+      sessionStorage.setItem('token', response.token);
+      sessionStorage.setItem('user', JSON.stringify(response.user));
+    }
+    return response;
+  }
+);
+
+export const verifyMfa = createAsyncThunk(
+  'auth/verifyMfa',
+  async (data: VerifyMfaRequest) => {
+    const response = await authApi.verifyMfa(data);
+    if (response.token && response.user) {
+      sessionStorage.setItem('token', response.token);
+      sessionStorage.setItem('user', JSON.stringify(response.user));
+    }
     return response;
   }
 );
@@ -21,15 +35,19 @@ export const register = createAsyncThunk(
 );
 
 export const logout = createAsyncThunk('auth/logout', async () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
+  try {
+    await authApi.logout();
+  } finally {
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+  }
 });
 
 export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
   async ({ userId, data }: { userId: string; data: Partial<User> }) => {
     const user = await mockUserApi.updateProfile(userId, data);
-    localStorage.setItem('user', JSON.stringify(user));
+    sessionStorage.setItem('user', JSON.stringify(user));
     return user;
   }
 );
@@ -50,9 +68,10 @@ export const changePassword = createAsyncThunk(
 );
 
 const initialState: AuthState = {
-  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null,
-  isAuthenticated: !!localStorage.getItem('token'),
-  token: localStorage.getItem('token'),
+  user: sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')!) : null,
+  isAuthenticated: !!sessionStorage.getItem('token'),
+  token: sessionStorage.getItem('token'),
+  mfaChallengeId: null,
   loading: false,
   error: null,
 };
@@ -73,13 +92,32 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthenticated = true;
+        state.mfaChallengeId = action.payload.mfaChallengeId || null;
+        if (action.payload.token && action.payload.user) {
+          state.user = action.payload.user;
+          state.token = action.payload.token;
+          state.isAuthenticated = true;
+          state.mfaChallengeId = null;
+        }
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Login failed';
+      })
+      .addCase(verifyMfa.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyMfa.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user || null;
+        state.token = action.payload.token || null;
+        state.isAuthenticated = !!action.payload.token;
+        state.mfaChallengeId = null;
+      })
+      .addCase(verifyMfa.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'MFA verification failed';
       })
       .addCase(register.pending, (state) => {
         state.loading = true;
@@ -96,6 +134,7 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
         state.token = null;
+        state.mfaChallengeId = null;
         state.isAuthenticated = false;
         state.error = null;
       })

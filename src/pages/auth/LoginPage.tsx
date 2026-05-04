@@ -2,19 +2,21 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAppDispatch';
-import { login, clearError } from '../../store/slices/authSlice';
+import { login, verifyMfa, clearError } from '../../store/slices/authSlice';
 import { AuthLayout } from '../../components/layouts/AuthLayout';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Alert } from '../../components/ui/Alert';
+import { LoginResult } from '../../types';
 
 export const LoginPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { loading, error } = useAppSelector((state) => state.auth);
+  const { loading, error, mfaChallengeId } = useAppSelector((state) => state.auth);
   const [username, setUsername] = React.useState('');
   const [accountNumber, setAccountNumber] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [otpCode, setOtpCode] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
   const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
 
@@ -30,10 +32,11 @@ export const LoginPage: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleFieldChange = (field: 'username' | 'accountNumber' | 'password', value: string) => {
+  const handleFieldChange = (field: 'username' | 'accountNumber' | 'password' | 'otpCode', value: string) => {
     if (field === 'username') setUsername(value);
     if (field === 'accountNumber') setAccountNumber(value);
     if (field === 'password') setPassword(value);
+    if (field === 'otpCode') setOtpCode(value);
 
     if (error) dispatch(clearError());
     if (formErrors[field]) {
@@ -47,6 +50,29 @@ export const LoginPage: React.FC = () => {
 
     const result = await dispatch(
       login({ username, accountNumber, password })
+    );
+
+    if (result.meta.requestStatus === 'fulfilled') {
+      const payload = result.payload as LoginResult | undefined;
+      if (payload && !payload.requiresMfa) {
+        navigate('/dashboard');
+      }
+    }
+  };
+
+  const handleVerifyMfa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedOtpCode = otpCode.trim();
+
+    if (!mfaChallengeId) return;
+
+    if (!/^\d{6}$/.test(trimmedOtpCode)) {
+      setFormErrors({ otpCode: 'Enter the 6-digit code sent to your email' });
+      return;
+    }
+
+    const result = await dispatch(
+      verifyMfa({ mfaChallengeId, otpCode: trimmedOtpCode })
     );
 
     if (result.meta.requestStatus === 'fulfilled') {
@@ -64,6 +90,36 @@ export const LoginPage: React.FC = () => {
         />
       )}
 
+      {mfaChallengeId ? (
+        <form onSubmit={handleVerifyMfa} className="space-y-5">
+          <Alert
+            type="info"
+            message="We sent a verification code to your email address."
+          />
+
+          <Input
+            type="text"
+            label="Verification Code"
+            placeholder="000000"
+            value={otpCode}
+            onChange={(e) => handleFieldChange('otpCode', e.target.value)}
+            error={formErrors.otpCode}
+            className="auth-input"
+            inputMode="numeric"
+            maxLength={6}
+            required
+          />
+
+          <Button
+            type="submit"
+            variant="primary"
+            isLoading={loading}
+            className="auth-primary-button w-full"
+          >
+            Verify Code
+          </Button>
+        </form>
+      ) : (
       <form onSubmit={handleSubmit} className="space-y-5">
         <Input
           type="text"
@@ -118,6 +174,7 @@ export const LoginPage: React.FC = () => {
           Sign In
         </Button>
       </form>
+      )}
 
       <div className="mt-6 text-center">
         <p className="text-gray-600">
