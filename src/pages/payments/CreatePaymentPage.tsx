@@ -128,8 +128,10 @@ export const CreatePaymentPage: React.FC = () => {
       })
     );
 
-    if (result.meta.requestStatus === 'fulfilled') {
-      navigate('/payments');
+    if (createPayment.fulfilled.match(result)) {
+      navigate('/payments/success', {
+        state: { payment: result.payload },
+      });
     }
   };
 

@@ -15,6 +15,7 @@ import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { PaymentsPage } from './pages/payments/PaymentsPage';
 import { CreatePaymentPage } from './pages/payments/CreatePaymentPage';
 import { PaymentDetailPage } from './pages/payments/PaymentDetailPage';
+import { PaymentSuccessPage } from './pages/payments/PaymentSuccessPage';
 
 // Beneficiaries
 import { BeneficiariesPage } from './pages/beneficiaries/BeneficiariesPage';
@@ -89,6 +90,15 @@ function App() {
           element={
             <ProtectedRoute>
               <CreatePaymentPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/payments/success"
+          element={
+            <ProtectedRoute>
+              <PaymentSuccessPage />
             </ProtectedRoute>
           }
         />
