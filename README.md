@@ -1,186 +1,109 @@
-# Payments App
+# International Payments App
 
-A React, TypeScript, Redux Toolkit, Tailwind CSS, and Vite frontend for an international payments workflow. The app includes landing, registration, login, dashboard, payments, beneficiaries, and profile screens.
+A web application for registering customers, signing in with MFA, managing beneficiaries, and creating international payment instructions.
 
-## Prerequisites
+This repository currently contains the frontend application. The frontend connects to a deployed backend REST API through `VITE_API_BASE_URL`.
 
-- Node.js 20 or newer
-- npm 10 or newer
+## Applications
 
-Check your installed versions:
+| App | Location | Description |
+| --- | --- | --- |
+| Frontend | Repository root | React, TypeScript, Vite single-page app. |
+| Backend API | Deployed external service | REST API used for authentication, MFA, beneficiaries, and payments. Backend source code is not included in this repository. |
 
-```bash
-node --version
-npm --version
-```
+Detailed READMEs:
 
-## Getting Started
+- [Frontend README](docs/frontend/README.md)
+- [Backend API README](docs/backend/README.md)
 
-1. Install dependencies:
+## Quick Start
+
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-2. Create a local environment file:
+Create a local environment file:
 
 ```bash
 cp .env.example .env
 ```
 
-On Windows PowerShell, use:
+On Windows PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-3. Confirm the API URL in `.env`:
-
-```env
-VITE_API_BASE_URL=https://international-payments-api-effxgrgvhwg3afgq.southafricanorth-01.azurewebsites.net
-```
-
-4. Start the development server:
+Start the frontend:
 
 ```bash
 npm run dev
 ```
 
-5. Open the local URL printed by Vite, usually:
+Open the URL printed by Vite, usually:
 
 ```text
 http://localhost:5173
 ```
 
-## Signing In
+## Backend Connection
 
-The login and registration screens use the backend API configured by `VITE_API_BASE_URL`.
+The frontend reads the backend URL from:
 
-To create a user:
+```env
+VITE_API_BASE_URL=https://international-payments-api-effxgrgvhwg3afgq.southafricanorth-01.azurewebsites.net
+```
 
-1. Open `/register`.
-2. Complete the registration form.
-3. After a successful registration, go to `/login`.
-4. Sign in with the username, account number, and password you registered.
+To use a local backend, update `.env`:
 
-After login, protected routes such as `/dashboard`, `/payments`, `/beneficiaries`, and `/profile` become available.
+```env
+VITE_API_BASE_URL=http://localhost:5000
+```
+
+Restart the Vite dev server after changing `.env`.
+
+## Tools Used
+
+| Area | Tools |
+| --- | --- |
+| Frontend | React, TypeScript, Vite, Redux Toolkit, React Router, TanStack React Form, Tailwind CSS, Lucide React, Axios/fetch |
+| Quality | ESLint, TypeScript compiler, npm audit |
+| DevOps/Security | GitHub Actions, CodeQL, Dependency Review |
+| Backend integration | REST/JSON API, bearer token authentication, email MFA, Azure-hosted API endpoint |
+| AI tools | GitHub Copilot/Codex-style assistance may be used during development; no AI service is required at runtime |
+| Not used in this repo | Firebase, FlutterFlow, Base44 |
 
 ## Available Scripts
 
-Run the app locally:
-
 ```bash
 npm run dev
-```
-
-Create a production build:
-
-```bash
 npm run build
-```
-
-Preview the production build locally:
-
-```bash
 npm run preview
-```
-
-Run ESLint:
-
-```bash
 npm run lint
-```
-
-Run TypeScript checks:
-
-```bash
 npm run typecheck
-```
-
-## How Data Works
-
-- Authentication, registration, and beneficiary management call the configured backend API.
-- Payments and profile actions currently use in-memory mock data from `src/services/mockApi.ts`.
-- Auth state is stored in browser `localStorage`, so signing out or clearing site data resets the session.
-
-## Environment Variables
-
-Vite only exposes environment variables that start with `VITE_`.
-
-| Variable | Required | Description |
-| --- | --- | --- |
-| `VITE_API_BASE_URL` | Yes | Backend API base URL used for registration and login. |
-
-If `.env` is missing, the app falls back to the Azure API URL defined in `src/services/authApi.ts`.
-
-## Authentication And MFA
-
-The backend login flow uses email MFA:
-
-1. Submit username, account number, and password.
-2. The backend emails a 6-digit verification code.
-3. Submit the code to complete login and receive a bearer session token.
-4. Protected API requests include the token in the `Authorization` header.
-
-For production, configure SMTP settings on the backend App Service:
-
-```text
-Email__SmtpHost
-Email__SmtpPort
-Email__Username
-Email__Password
-Email__FromAddress
-Email__FromName
-Email__EnableSsl
-Email__EnableSending=true
-```
-
-If `Email__EnableSending` is false, the backend logs the OTP instead of sending email. Use that only for local development.
-
-## Troubleshooting
-
-### Port 5173 is already in use
-
-Vite will usually choose another port automatically. Use the URL shown in your terminal.
-
-### Login fails after registration
-
-Check that:
-
-- The backend API is reachable.
-- `VITE_API_BASE_URL` is correct.
-- You are using the exact username, numeric account number, and password from registration.
-
-### Environment changes are not taking effect
-
-Stop the dev server and start it again:
-
-```bash
-npm run dev
-```
-
-### Build fails because dependencies are missing
-
-Install dependencies again:
-
-```bash
-npm install
-```
-
-Then rerun:
-
-```bash
-npm run build
 ```
 
 ## Project Structure
 
 ```text
-src/
-  components/       Reusable UI and layout components
-  hooks/            Typed Redux hooks
-  pages/            Route-level screens
-  services/         API and mock data services
-  store/            Redux store and slices
-  types/            Shared TypeScript types
+.
+  docs/
+    frontend/       Frontend setup and usage guide
+    backend/        Backend API integration guide
+  public/           Static assets
+  src/
+    components/     Reusable UI and layout components
+    hooks/          Typed Redux hooks
+    pages/          Route-level screens
+    services/       Backend API and mock data services
+    store/          Redux store and slices
+    types/          Shared TypeScript types
 ```
+
+## Notes
+
+- Authentication, registration, beneficiaries, and payments call the configured backend API.
+- Some profile-related behavior still uses in-memory mock data from `src/services/mockApi.ts`.
+- Auth tokens are stored in browser `sessionStorage`.
