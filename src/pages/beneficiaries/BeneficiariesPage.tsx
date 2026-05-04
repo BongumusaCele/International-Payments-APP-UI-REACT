@@ -15,6 +15,7 @@ import { Input } from '../../components/ui/Input';
 import { Alert } from '../../components/ui/Alert';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Pencil, Trash2, Plus } from 'lucide-react';
+import { validationMessages, validationPatterns } from '../../utils/validation';
 
 interface BankOption {
   id: string;
@@ -99,14 +100,17 @@ export const BeneficiariesPage: React.FC = () => {
     const swiftCode = formData.swiftCode.trim().toUpperCase();
 
     if (!formData.name.trim()) errors.name = 'Name is required';
+    else if (!validationPatterns.personName.test(formData.name.trim())) errors.name = validationMessages.personName;
     if (!formData.accountNumber.trim()) errors.accountNumber = 'Account number is required';
-    else if (!/^\d+$/.test(formData.accountNumber.trim())) errors.accountNumber = 'Account number must contain digits only';
+    else if (!validationPatterns.beneficiaryAccountNumber.test(formData.accountNumber.trim())) errors.accountNumber = validationMessages.beneficiaryAccountNumber;
     if (!formData.bankName.trim()) errors.bankName = 'Bank name is required';
+    else if (!validationPatterns.bankName.test(formData.bankName.trim())) errors.bankName = validationMessages.bankName;
     if (!swiftCode) errors.swiftCode = 'SWIFT/BIC code is required';
-    else if (!/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(swiftCode)) {
-      errors.swiftCode = 'Enter a valid 8 or 11 character SWIFT code';
+    else if (!validationPatterns.swiftCode.test(swiftCode)) {
+      errors.swiftCode = validationMessages.swiftCode;
     }
     if (!formData.country.trim()) errors.country = 'Country is required';
+    else if (!validationPatterns.country.test(formData.country.trim())) errors.country = validationMessages.country;
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -287,6 +291,9 @@ export const BeneficiariesPage: React.FC = () => {
                 value={formData.name}
                 onChange={handleChange}
                 error={formErrors.name}
+                minLength={2}
+                maxLength={50}
+                pattern="[A-Za-z][A-Za-z' -]{1,49}"
                 required
               />
 
@@ -299,6 +306,9 @@ export const BeneficiariesPage: React.FC = () => {
                 onChange={handleChange}
                 error={formErrors.accountNumber}
                 inputMode="numeric"
+                minLength={6}
+                maxLength={20}
+                pattern="\d{6,20}"
                 required
               />
 
@@ -370,6 +380,9 @@ export const BeneficiariesPage: React.FC = () => {
                   value={formData.bankName}
                   onChange={handleChange}
                   error={formErrors.bankName}
+                  minLength={2}
+                  maxLength={80}
+                  pattern="[A-Za-z0-9][A-Za-z0-9 .,'&()/-]{1,79}"
                   required
                 />
               )}
@@ -382,6 +395,7 @@ export const BeneficiariesPage: React.FC = () => {
                 value={formData.swiftCode}
                 onChange={handleChange}
                 error={formErrors.swiftCode}
+                pattern="[A-Za-z]{6}[A-Za-z0-9]{2}([A-Za-z0-9]{3})?"
                 maxLength={11}
                 required
               />

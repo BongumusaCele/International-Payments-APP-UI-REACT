@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Alert } from '../../components/ui/Alert';
 import { LoginResult } from '../../types';
+import { isValidUserAccountNumber, validationMessages, validationPatterns } from '../../utils/validation';
 
 export const LoginPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -24,8 +25,9 @@ export const LoginPage: React.FC = () => {
     const errors: Record<string, string> = {};
 
     if (!username.trim()) errors.username = 'Username is required';
+    else if (!validationPatterns.username.test(username.trim())) errors.username = validationMessages.username;
     if (!accountNumber.trim()) errors.accountNumber = 'Account number is required';
-    else if (!/^\d+$/.test(accountNumber.trim())) errors.accountNumber = 'Account number must contain digits only';
+    else if (!isValidUserAccountNumber(accountNumber.trim())) errors.accountNumber = validationMessages.userAccountNumber;
     if (!password) errors.password = 'Password is required';
 
     setFormErrors(errors);
@@ -49,7 +51,7 @@ export const LoginPage: React.FC = () => {
     if (!validateForm()) return;
 
     const result = await dispatch(
-      login({ username, accountNumber, password })
+      login({ username: username.trim(), accountNumber: accountNumber.trim(), password })
     );
 
     if (result.meta.requestStatus === 'fulfilled') {
@@ -129,6 +131,9 @@ export const LoginPage: React.FC = () => {
           onChange={(e) => handleFieldChange('username', e.target.value)}
           error={formErrors.username}
           className="auth-input"
+          minLength={3}
+          maxLength={30}
+          pattern="[A-Za-z][A-Za-z0-9._-]{2,29}"
           required
         />
 
@@ -141,6 +146,9 @@ export const LoginPage: React.FC = () => {
           error={formErrors.accountNumber}
           className="auth-input"
           inputMode="numeric"
+          minLength={6}
+          maxLength={10}
+          pattern="\d{6,10}"
           required
         />
 

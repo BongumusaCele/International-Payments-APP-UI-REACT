@@ -7,6 +7,13 @@ import { AuthLayout } from '../../components/layouts/AuthLayout';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Alert } from '../../components/ui/Alert';
+import {
+  isValidUserAccountNumber,
+  isStrongPassword,
+  passwordRules,
+  validationMessages,
+  validationPatterns,
+} from '../../utils/validation';
 
 const steps = [
   'Personal Details',
@@ -17,13 +24,6 @@ const steps = [
 
 const accountTypes = ['Cheque', 'Savings', 'Business'];
 const currencies = ['ZAR', 'USD', 'EUR', 'GBP', 'JPY', 'CAD'];
-
-const passwordRules = [
-  { label: 'At least 8 characters', test: (password: string) => password.length >= 8 },
-  { label: 'A number', test: (password: string) => /\d/.test(password) },
-  { label: 'A special character', test: (password: string) => /[^A-Za-z0-9]/.test(password) },
-  { label: 'Upper & lower case', test: (password: string) => /[a-z]/.test(password) && /[A-Z]/.test(password) },
-];
 
 export const RegisterPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -54,10 +54,12 @@ export const RegisterPage: React.FC = () => {
 
     if (step === 0) {
       if (!formData.firstName.trim()) errors.firstName = 'First name is required';
+      else if (!validationPatterns.personName.test(formData.firstName.trim())) errors.firstName = validationMessages.personName;
       if (!formData.lastName.trim()) errors.lastName = 'Last name is required';
+      else if (!validationPatterns.personName.test(formData.lastName.trim())) errors.lastName = validationMessages.personName;
       if (!formData.idNumber.trim()) errors.idNumber = 'ID number is required';
-      else if (!/^\d{13}$/.test(formData.idNumber.replace(/\s/g, ''))) {
-        errors.idNumber = 'Enter a valid 13-digit South African ID number';
+      else if (!validationPatterns.idNumber.test(formData.idNumber.replace(/\s/g, ''))) {
+        errors.idNumber = validationMessages.idNumber;
       }
       if (!formData.email.trim()) errors.email = 'Email address is required';
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Invalid email address';
@@ -66,16 +68,17 @@ export const RegisterPage: React.FC = () => {
 
     if (step === 1) {
       if (!formData.accountNumber.trim()) errors.accountNumber = 'Account number is required';
+      else if (!isValidUserAccountNumber(formData.accountNumber.trim())) errors.accountNumber = validationMessages.userAccountNumber;
       if (!formData.accountType) errors.accountType = 'Account type is required';
       if (!formData.preferredCurrency) errors.preferredCurrency = 'Preferred currency is required';
     }
 
     if (step === 2) {
       if (!formData.username.trim()) errors.username = 'Username is required';
-      else if (formData.username.length < 3) errors.username = 'Username must be at least 3 characters';
+      else if (!validationPatterns.username.test(formData.username.trim())) errors.username = validationMessages.username;
       if (!formData.password) errors.password = 'Password is required';
-      else if (!passwordRules.every((rule) => rule.test(formData.password))) {
-        errors.password = 'Password does not meet all requirements';
+      else if (!isStrongPassword(formData.password)) {
+        errors.password = validationMessages.password;
       }
       if (formData.password !== formData.confirmPassword) {
         errors.confirmPassword = 'Passwords do not match';
@@ -133,16 +136,16 @@ export const RegisterPage: React.FC = () => {
 
     const result = await dispatch(
       register({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        username: formData.username,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim(),
+        username: formData.username.trim(),
         password: formData.password,
         confirmPassword: formData.confirmPassword,
         idNumber: formData.idNumber.replace(/\s/g, ''),
-        accountNumber: formData.accountNumber,
+        accountNumber: formData.accountNumber.trim(),
         preferredCurrency: formData.preferredCurrency,
-        phone: formData.phone,
+        phone: formData.phone.trim(),
       })
     );
 
@@ -231,6 +234,9 @@ export const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   error={formErrors.firstName}
                   className="wizard-input"
+                  minLength={2}
+                  maxLength={50}
+                  pattern="[A-Za-z][A-Za-z' -]{1,49}"
                   required
                 />
 
@@ -243,6 +249,9 @@ export const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   error={formErrors.lastName}
                   className="wizard-input"
+                  minLength={2}
+                  maxLength={50}
+                  pattern="[A-Za-z][A-Za-z' -]{1,49}"
                   required
                 />
 
@@ -269,6 +278,7 @@ export const RegisterPage: React.FC = () => {
                   className="wizard-input"
                   inputMode="numeric"
                   maxLength={13}
+                  pattern="\d{13}"
                   required
                 />
 
@@ -300,6 +310,10 @@ export const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   error={formErrors.accountNumber}
                   className="wizard-input"
+                  inputMode="numeric"
+                  minLength={6}
+                  maxLength={10}
+                  pattern="\d{6,10}"
                   required
                 />
                 {renderSelect('accountType', 'Account Type', 'Select account type', accountTypes)}
@@ -321,6 +335,9 @@ export const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   error={formErrors.username}
                   className="wizard-input"
+                  minLength={3}
+                  maxLength={30}
+                  pattern="[A-Za-z][A-Za-z0-9._-]{2,29}"
                   required
                 />
 
@@ -333,6 +350,8 @@ export const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   error={formErrors.password}
                   className="wizard-input"
+                  minLength={12}
+                  maxLength={128}
                   rightElement={
                     <button
                       type="button"

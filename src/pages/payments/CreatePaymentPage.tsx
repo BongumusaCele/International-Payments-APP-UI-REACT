@@ -8,6 +8,11 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Alert } from '../../components/ui/Alert';
+import {
+  isValidPaymentAmount,
+  validationMessages,
+  validationPatterns,
+} from '../../utils/validation';
 
 const paymentProviders = ['SWIFT', 'Bank Transfer', 'EFT'];
 
@@ -49,8 +54,8 @@ export const CreatePaymentPage: React.FC = () => {
     const swiftCode = formData.swiftCode.trim().toUpperCase();
 
     if (!formData.amount) newErrors.amount = 'Amount is required';
-    else if (isNaN(Number(formData.amount)) || Number(formData.amount) <= 0) {
-      newErrors.amount = 'Amount must be a positive number';
+    else if (!isValidPaymentAmount(formData.amount)) {
+      newErrors.amount = validationMessages.amount;
     }
     if (!formData.beneficiaryId) newErrors.beneficiaryId = 'Select a beneficiary';
     if (!formData.provider) newErrors.provider = 'Payment provider is required';
@@ -59,10 +64,11 @@ export const CreatePaymentPage: React.FC = () => {
     if (!formData.recipientBankName.trim()) newErrors.recipientBankName = 'Bank name is required';
     if (!swiftCode) {
       newErrors.swiftCode = 'SWIFT code is required';
-    } else if (!/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(swiftCode)) {
-      newErrors.swiftCode = 'Enter a valid 8 or 11 character SWIFT code';
+    } else if (!validationPatterns.swiftCode.test(swiftCode)) {
+      newErrors.swiftCode = validationMessages.swiftCode;
     }
     if (!formData.paymentReference.trim()) newErrors.paymentReference = 'Payment reference is required';
+    else if (!validationPatterns.paymentReference.test(formData.paymentReference.trim())) newErrors.paymentReference = validationMessages.paymentReference;
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -177,7 +183,8 @@ export const CreatePaymentPage: React.FC = () => {
                   onChange={handleChange}
                   error={errors.amount}
                   step="0.01"
-                  min="0"
+                  min="1"
+                  max="1000000"
                   required
                 />
 
@@ -297,6 +304,9 @@ export const CreatePaymentPage: React.FC = () => {
                     value={formData.paymentReference}
                     onChange={handleChange}
                     error={errors.paymentReference}
+                    minLength={3}
+                    maxLength={35}
+                    pattern="[A-Za-z0-9][A-Za-z0-9 ._/#-]{2,34}"
                     required
                   />
                 </div>
