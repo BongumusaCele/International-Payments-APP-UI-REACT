@@ -1,16 +1,162 @@
-# React + Vite
+# Payments App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React, TypeScript, Redux Toolkit, Tailwind CSS, and Vite frontend for an international payments workflow. The app includes landing, registration, login, dashboard, payments, beneficiaries, and profile screens.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 20 or newer
+- npm 10 or newer
 
-## React Compiler
+Check your installed versions:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+node --version
+npm --version
+```
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create a local environment file:
+
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell, use:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+3. Confirm the API URL in `.env`:
+
+```env
+VITE_API_BASE_URL=https://international-payments-api-effxgrgvhwg3afgq.southafricanorth-01.azurewebsites.net
+```
+
+4. Start the development server:
+
+```bash
+npm run dev
+```
+
+5. Open the local URL printed by Vite, usually:
+
+```text
+http://localhost:5173
+```
+
+## Signing In
+
+The login and registration screens use the backend API configured by `VITE_API_BASE_URL`.
+
+To create a user:
+
+1. Open `/register`.
+2. Complete the registration form.
+3. After a successful registration, go to `/login`.
+4. Sign in with the username, account number, and password you registered.
+
+After login, protected routes such as `/dashboard`, `/payments`, `/beneficiaries`, and `/profile` become available.
+
+## Available Scripts
+
+Run the app locally:
+
+```bash
+npm run dev
+```
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+Run ESLint:
+
+```bash
+npm run lint
+```
+
+Run TypeScript checks:
+
+```bash
+npm run typecheck
+```
+
+## How Data Works
+
+- Authentication and registration call the configured backend API.
+- Payments, beneficiaries, and profile actions currently use in-memory mock data from `src/services/mockApi.ts`.
+- Auth state is stored in browser `localStorage`, so signing out or clearing site data resets the session.
+
+## Environment Variables
+
+Vite only exposes environment variables that start with `VITE_`.
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | Yes | Backend API base URL used for registration and login. |
+
+If `.env` is missing, the app falls back to the Azure API URL defined in `src/services/authApi.ts`.
+
+## Troubleshooting
+
+### Port 5173 is already in use
+
+Vite will usually choose another port automatically. Use the URL shown in your terminal.
+
+### Login fails after registration
+
+Check that:
+
+- The backend API is reachable.
+- `VITE_API_BASE_URL` is correct.
+- You are using the exact username, numeric account number, and password from registration.
+
+### Environment changes are not taking effect
+
+Stop the dev server and start it again:
+
+```bash
+npm run dev
+```
+
+### Build fails because dependencies are missing
+
+Install dependencies again:
+
+```bash
+npm install
+```
+
+Then rerun:
+
+```bash
+npm run build
+```
+
+## Project Structure
+
+```text
+src/
+  components/       Reusable UI and layout components
+  hooks/            Typed Redux hooks
+  pages/            Route-level screens
+  services/         API and mock data services
+  store/            Redux store and slices
+  types/            Shared TypeScript types
+```
