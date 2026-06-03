@@ -1,7 +1,0 @@
-{
-  "name": "payments-app-azure-static-host",
-  "private": true,
-  "scripts": {
-    "start": "node server.cjs"
-  }
-}
