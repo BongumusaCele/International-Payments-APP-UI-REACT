@@ -139,7 +139,11 @@ jobs:
 
       - name: Create deployment package
         run: |
-          cd dist
+          mkdir frontend-deploy
+          cp -R dist/. frontend-deploy/
+          cp azure-app-service/package.json frontend-deploy/package.json
+          cp azure-app-service/server.cjs frontend-deploy/server.cjs
+          cd frontend-deploy
           zip -r ../frontend-dist.zip .
 
       - name: Deploy to Azure App Service
@@ -151,4 +155,3 @@ jobs:
           target-path: /home/site/wwwroot
           clean: true
           restart: true
-          startup-command: pm2 serve /home/site/wwwroot --spa --no-daemon
