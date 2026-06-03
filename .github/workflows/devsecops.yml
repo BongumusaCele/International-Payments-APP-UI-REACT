@@ -137,9 +137,14 @@ jobs:
           name: frontend-dist
           path: dist
 
+      - name: Create deployment package
+        run: |
+          cd dist
+          zip -r ../frontend-dist.zip .
+
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ vars.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: dist
+          package: frontend-dist.zip
