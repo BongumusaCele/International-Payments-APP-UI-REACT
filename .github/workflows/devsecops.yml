@@ -151,3 +151,4 @@ jobs:
           target-path: /home/site/wwwroot
           clean: true
           restart: true
+          startup-command: pm2 serve /home/site/wwwroot --spa --no-daemon
