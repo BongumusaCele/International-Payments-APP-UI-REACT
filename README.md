@@ -85,6 +85,26 @@ npm run lint
 npm run typecheck
 ```
 
+## GitHub Actions Deployment
+
+The DevSecOps workflow runs dependency audit, linting, TypeScript checks, tests when a test script exists, production build, CodeQL, and dependency review.
+
+On every push to `main`, the workflow deploys the built `dist` folder to Azure App Service after the quality and CodeQL jobs pass.
+
+Configure these GitHub repository settings before deploying:
+
+| Type | Name | Value |
+| --- | --- | --- |
+| Repository variable | `AZURE_WEBAPP_NAME` | Azure App Service app name |
+| Repository secret | `AZURE_WEBAPP_PUBLISH_PROFILE` | Publish profile XML downloaded from the Azure App Service |
+| Repository variable, optional | `VITE_API_BASE_URL` | Backend API base URL used during the Vite build |
+
+For Linux App Service hosting a static Vite build, configure the App Service startup command to serve the deployed files as a single-page app, for example:
+
+```bash
+pm2 serve /home/site/wwwroot --spa --no-daemon
+```
+
 ## Project Structure
 
 ```text

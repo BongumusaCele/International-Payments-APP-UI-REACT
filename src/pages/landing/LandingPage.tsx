@@ -129,9 +129,9 @@ export const LandingPage: React.FC = () => {
           <div className="ipp-container ipp-hero-grid">
             <div className="ipp-hero-copy">
               <h1>
-                Send International
-                <span>Payments with</span>
-                <strong>Confidence</strong>
+                Happy International
+                <span>Payment</span>
+                <strong>Transactions</strong>
               </h1>
               <p>
                 Our secure portal helps South African customers send money to beneficiaries around the world.
