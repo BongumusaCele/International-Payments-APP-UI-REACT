@@ -70,7 +70,7 @@ Restart the Vite dev server after changing `.env`.
 | --- | --- |
 | Frontend | React, TypeScript, Vite, Redux Toolkit, React Router, TanStack React Form, Tailwind CSS, Lucide React, fetch |
 | Quality | ESLint, TypeScript compiler, npm audit |
-| DevOps/Security | GitHub Actions, CodeQL, Dependency Review |
+| DevOps/Security | CircleCI, SonarCloud/SonarQube scan, GitHub Actions, CodeQL, Dependency Review |
 | Backend integration | REST/JSON API, bearer token authentication, email MFA, Azure-hosted API endpoint |
 | AI tools | GitHub Copilot/Codex-style assistance may be used during development; no AI service is required at runtime |
 | Not used in this repo | Firebase, FlutterFlow, Base44 |
@@ -98,11 +98,6 @@ Configure these GitHub repository settings before deploying:
 | Repository variable | `AZURE_WEBAPP_NAME` | Azure App Service app name |
 | Repository secret | `AZURE_WEBAPP_PUBLISH_PROFILE` | Publish profile XML downloaded from the Azure App Service |
 | Repository variable, optional | `VITE_API_BASE_URL` | Backend API base URL used during the Vite build |
-| Repository variable, optional | `SONAR_HOST_URL` | SonarCloud URL. Defaults to `https://sonarcloud.io` |
-| Repository variable | `SONAR_ORGANIZATION` | SonarCloud organization key |
-| Repository variable | `SONAR_PROJECT_KEY` | SonarCloud project key |
-| Repository variable, optional | `SONAR_PROJECT_NAME` | Friendly SonarCloud project name |
-| Repository secret | `SONAR_TOKEN` | SonarCloud project analysis token |
 
 For Linux App Service hosting a static Vite build, configure the App Service startup command to serve the deployed files as a single-page app, for example:
 
@@ -110,7 +105,30 @@ For Linux App Service hosting a static Vite build, configure the App Service sta
 pm2 serve /home/site/wwwroot --spa --no-daemon
 ```
 
-SonarCloud analysis runs after the frontend quality checks. Production deployment waits for the SonarCloud quality gate to pass.
+## CircleCI SonarCloud Pipeline
+
+The CircleCI pipeline in `.circleci/config.yml` runs on repository changes and performs:
+
+- production dependency audit
+- ESLint
+- TypeScript checks
+- tests when a test script exists
+- production build
+- SonarCloud/SonarQube scan for security hotspots, code smells, vulnerabilities, and quality gate status
+
+The SonarCloud project settings are stored in `sonar-project.properties`:
+
+```text
+sonar.projectKey=BongumusaCele_International-Payments-APP-UI-REACT
+sonar.organization=bongumusacele
+sonar.host.url=https://sonarcloud.io
+```
+
+Configure this CircleCI project environment variable:
+
+| Type | Name | Value |
+| --- | --- | --- |
+| CircleCI project environment variable | `SONAR_TOKEN` | SonarCloud analysis token |
 
 ## Project Structure
 

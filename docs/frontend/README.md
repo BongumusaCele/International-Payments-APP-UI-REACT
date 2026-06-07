@@ -112,15 +112,15 @@ npm test --if-present
 npm run build
 ```
 
-The GitHub Actions workflow also runs CodeQL, pull request dependency review, and SonarCloud analysis. SonarCloud requires these GitHub Actions settings:
+The GitHub Actions workflow also runs CodeQL and pull request dependency review.
+
+The CircleCI pipeline runs the same core frontend checks plus a SonarCloud/SonarQube scan for security hotspots, code smells, dependency vulnerabilities, and quality gate status. The SonarCloud project key, organization, and host URL are configured in `sonar-project.properties`.
+
+Configure this CircleCI project environment variable:
 
 | Type | Name | Description |
 | --- | --- | --- |
-| Repository variable, optional | `SONAR_HOST_URL` | SonarCloud URL. Defaults to `https://sonarcloud.io` |
-| Repository variable | `SONAR_ORGANIZATION` | SonarCloud organization key |
-| Repository variable | `SONAR_PROJECT_KEY` | SonarCloud project key |
-| Repository variable, optional | `SONAR_PROJECT_NAME` | Friendly project name |
-| Repository secret | `SONAR_TOKEN` | SonarCloud project analysis token |
+| CircleCI project environment variable | `SONAR_TOKEN` | SonarCloud analysis token |
 
 ## Environment Variables
 
