@@ -135,7 +135,6 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
-            -Dsonar.projectName=${{ vars.SONAR_PROJECT_NAME || 'International Payments App UI' }}
             -Dsonar.qualitygate.wait=true
 
   dependency-review:
