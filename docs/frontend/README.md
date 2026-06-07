@@ -14,7 +14,7 @@ The frontend is a React single-page application for an international payments wo
 | Forms | TanStack React Form |
 | Styling | Tailwind CSS |
 | Icons | Lucide React |
-| API calls | Browser `fetch`, Axios dependency available |
+| API calls | Browser `fetch` |
 | Quality checks | ESLint, TypeScript compiler |
 | Package manager | npm |
 | AI tools | Optional development assistance only; no AI runtime dependency |
@@ -108,8 +108,19 @@ Run the same core checks used by CI:
 npm audit --omit=dev --audit-level=high
 npm run lint
 npm run typecheck
+npm test --if-present
 npm run build
 ```
+
+The GitHub Actions workflow also runs CodeQL, pull request dependency review, and SonarCloud analysis. SonarCloud requires these GitHub Actions settings:
+
+| Type | Name | Description |
+| --- | --- | --- |
+| Repository variable, optional | `SONAR_HOST_URL` | SonarCloud URL. Defaults to `https://sonarcloud.io` |
+| Repository variable | `SONAR_ORGANIZATION` | SonarCloud organization key |
+| Repository variable | `SONAR_PROJECT_KEY` | SonarCloud project key |
+| Repository variable, optional | `SONAR_PROJECT_NAME` | Friendly project name |
+| Repository secret | `SONAR_TOKEN` | SonarCloud project analysis token |
 
 ## Environment Variables
 
@@ -138,9 +149,23 @@ If `.env` is missing, the app falls back to the deployed Azure API URL configure
 | `/login` | Login and MFA |
 | `/dashboard` | Authenticated overview |
 | `/payments` | Payment list |
-| `/payments/new` | Create payment |
+| `/payments/create` | Create payment |
 | `/beneficiaries` | Manage beneficiaries |
 | `/profile` | Profile settings |
+| `/employee/login` | Employee login |
+| `/employee/dashboard` | Employee operations dashboard |
+| `/employee/payments` | Employee transaction review queue |
+
+## Employee Portal Demo
+
+The employee portal currently uses frontend-only mock data until backend employee APIs are available.
+
+| Employee number | Password | Role |
+| --- | --- | --- |
+| `EMP001` | `Password123!` | Payments Officer |
+| `EMP002` | `Password123!` | Senior Payments Officer |
+
+Employees can review mock customer transactions, verify payee account and SWIFT/BIC details, and submit verified items to a simulated SWIFT flow.
 
 ## Data Sources
 
@@ -148,6 +173,7 @@ If `.env` is missing, the app falls back to the deployed Azure API URL configure
 - `src/services/beneficiaryApi.ts` calls backend beneficiary endpoints.
 - `src/services/paymentApi.ts` calls backend payment endpoints.
 - `src/services/mockApi.ts` contains in-memory mock data used by profile-related flows.
+- `src/services/employeeMockApi.ts` contains in-memory mock data used by employee portal flows.
 
 ## Troubleshooting
 

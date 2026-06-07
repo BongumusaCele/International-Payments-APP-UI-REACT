@@ -118,9 +118,14 @@ export const LandingPage: React.FC = () => {
             ))}
           </nav>
 
-          <Link to="/login" className="ipp-login-button">
-            Login
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/employee/login" className="hidden text-sm font-black text-white/80 transition hover:text-blue-400 sm:inline">
+              Employee Portal
+            </Link>
+            <Link to="/login" className="ipp-login-button">
+              Login
+            </Link>
+          </div>
         </div>
       </header>
 

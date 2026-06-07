@@ -191,6 +191,12 @@ export const LoginPage: React.FC = () => {
             Register here
           </Link>
         </p>
+        <p className="mt-3 text-sm text-gray-600">
+          Bank employee?{' '}
+          <Link to="/employee/login" className="font-semibold text-blue-900 hover:underline">
+            Open employee portal
+          </Link>
+        </p>
       </div>
     </AuthLayout>
   );

@@ -120,3 +120,52 @@ export interface PaymentSummary {
   rejectedCount: number;
   completedCount: number;
 }
+
+export interface EmployeeUser {
+  id: string;
+  fullName: string;
+  email: string;
+  employeeNumber: string;
+  role: 'Payments Officer' | 'Senior Payments Officer';
+  branch: string;
+}
+
+export interface EmployeeAuthState {
+  user: EmployeeUser | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  error: string | null;
+}
+
+export interface EmployeeLoginRequest {
+  employeeNumber: string;
+  password: string;
+}
+
+export interface EmployeePaymentReview {
+  id: string;
+  paymentReference: string;
+  customerName: string;
+  customerAccountNumber: string;
+  amount: number;
+  currency: string;
+  beneficiaryName: string;
+  recipientAccountNumber: string;
+  recipientBankName: string;
+  swiftCode: string;
+  country: string;
+  status: 'Under Review' | 'Verified' | 'Submitted to SWIFT' | 'Rejected';
+  createdAt: string;
+  verifiedBy?: string;
+  verifiedAt?: string;
+  swiftReference?: string;
+  submittedAt?: string;
+  verificationNotes?: string;
+}
+
+export interface EmployeePaymentSummary {
+  underReviewCount: number;
+  verifiedCount: number;
+  submittedCount: number;
+  rejectedCount: number;
+}

@@ -23,6 +23,11 @@ import { BeneficiariesPage } from './pages/beneficiaries/BeneficiariesPage';
 // Profile
 import { ProfilePage } from './pages/profile/ProfilePage';
 
+// Employee Portal
+import { EmployeeDashboardPage } from './pages/employee/EmployeeDashboardPage';
+import { EmployeeLoginPage } from './pages/employee/EmployeeLoginPage';
+import { EmployeePaymentsPage } from './pages/employee/EmployeePaymentsPage';
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
@@ -32,6 +37,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const EmployeeProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { isAuthenticated } = useAppSelector((state) => state.employee);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/employee/login" replace />;
   }
 
   return <>{children}</>;
@@ -65,6 +80,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/employee/login" element={<EmployeeLoginPage />} />
 
         {/* Protected Routes */}
         <Route
@@ -127,6 +143,25 @@ function App() {
             <ProtectedRoute>
               <ProfilePage />
             </ProtectedRoute>
+          }
+        />
+
+        {/* Employee Protected Routes */}
+        <Route
+          path="/employee/dashboard"
+          element={
+            <EmployeeProtectedRoute>
+              <EmployeeDashboardPage />
+            </EmployeeProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/employee/payments"
+          element={
+            <EmployeeProtectedRoute>
+              <EmployeePaymentsPage />
+            </EmployeeProtectedRoute>
           }
         />
 
