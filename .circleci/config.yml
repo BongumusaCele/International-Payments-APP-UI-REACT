@@ -1,8 +1,5 @@
 version: 2.1
 
-orbs:
-  sonarcloud: sonarsource/sonarcloud@3.0.0
-
 jobs:
   frontend-quality-and-sonar:
     docker:
@@ -54,7 +51,14 @@ jobs:
               exit 1
             fi
 
-      - sonarcloud/scan
+      - run:
+          name: Run SonarCloud analysis
+          command: |
+            SCANNER_VERSION=8.0.1.6346
+            SCANNER_DIR="sonar-scanner-${SCANNER_VERSION}-linux-x64"
+            curl -sSLo sonar-scanner.zip "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SCANNER_VERSION}-linux-x64.zip"
+            unzip -q sonar-scanner.zip
+            "./${SCANNER_DIR}/bin/sonar-scanner"
 
 workflows:
   frontend-devsecops:
