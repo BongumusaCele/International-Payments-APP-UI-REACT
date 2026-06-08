@@ -16,17 +16,71 @@ import { EmployeePaymentReview } from '../../types';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAppDispatch';
 import { validationMessages, validationPatterns } from '../../utils/validation';
 
-const statuses = ['All', 'Under Review', 'Verified', 'Submitted to SWIFT', 'Rejected'];
+type PaymentStatusFilter = 'All' | EmployeePaymentReview['status'];
+type PendingActionType = 'verify' | 'submit' | 'reject';
+
+const statuses: PaymentStatusFilter[] = ['All', 'Under Review', 'Verified', 'Submitted to SWIFT', 'Rejected'];
 
 type PendingAction = {
-  type: 'verify' | 'submit' | 'reject';
+  type: PendingActionType;
   payment: EmployeePaymentReview;
+};
+
+type ButtonVariant = 'primary' | 'secondary' | 'outline';
+
+interface ActionCopy {
+  title: string;
+  confirmationLabel: string;
+  confirmLabel: string;
+  buttonVariant: ButtonVariant;
+}
+
+const actionCopy: Record<PendingActionType, ActionCopy> = {
+  verify: {
+    title: 'Verify Transaction',
+    confirmationLabel: 'I confirm the payee account information and SWIFT/BIC details are appropriate and correct.',
+    confirmLabel: 'Confirm Verify',
+    buttonVariant: 'primary',
+  },
+  submit: {
+    title: 'Submit Transaction to SWIFT',
+    confirmationLabel: 'I confirm this transaction has been verified and is ready for simulated SWIFT submission.',
+    confirmLabel: 'Confirm Submit',
+    buttonVariant: 'secondary',
+  },
+  reject: {
+    title: 'Reject Transaction',
+    confirmationLabel: 'I confirm this transaction should be rejected and returned for correction.',
+    confirmLabel: 'Confirm Reject',
+    buttonVariant: 'outline',
+  },
+};
+
+const getFilteredPayments = (
+  payments: EmployeePaymentReview[],
+  filterStatus: PaymentStatusFilter
+) => {
+  if (filterStatus === 'All') {
+    return payments;
+  }
+
+  return payments.filter((payment) => payment.status === filterStatus);
+};
+
+const getFilterButtonClass = (isActive: boolean) => {
+  const baseClass = 'rounded-lg px-4 py-2 font-medium transition-colors';
+
+  if (isActive) {
+    return `${baseClass} bg-blue-900 text-white`;
+  }
+
+  return `${baseClass} bg-gray-200 text-gray-800 hover:bg-gray-300`;
 };
 
 export const EmployeePaymentsPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { payments, paymentsLoading, actionLoadingId, error } = useAppSelector((state) => state.employee);
-  const [filterStatus, setFilterStatus] = React.useState('All');
+  const [filterStatus, setFilterStatus] = React.useState<PaymentStatusFilter>('All');
   const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null);
   const [isConfirmationChecked, setIsConfirmationChecked] = React.useState(false);
   const [rejectionReason, setRejectionReason] = React.useState('');
@@ -42,9 +96,7 @@ export const EmployeePaymentsPage: React.FC = () => {
     }
   }, [actionLoadingId, dispatch]);
 
-  const filteredPayments = filterStatus === 'All'
-    ? payments
-    : payments.filter((payment) => payment.status === filterStatus);
+  const filteredPayments = getFilteredPayments(payments, filterStatus);
 
   const openConfirmation = (action: PendingAction) => {
     setPendingAction(action);
@@ -127,11 +179,7 @@ export const EmployeePaymentsPage: React.FC = () => {
                 key={status}
                 type="button"
                 onClick={() => setFilterStatus(status)}
-                className={`rounded-lg px-4 py-2 font-medium transition-colors ${
-                  filterStatus === status
-                    ? 'bg-blue-900 text-white'
-                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                }`}
+                className={getFilterButtonClass(filterStatus === status)}
               >
                 {status}
               </button>
@@ -140,108 +188,12 @@ export const EmployeePaymentsPage: React.FC = () => {
         </Card>
 
         <Card>
-          {paymentsLoading ? (
-            <LoadingSpinner />
-          ) : filteredPayments.length === 0 ? (
-            <p className="py-8 text-center text-gray-600">No transactions match this filter.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[1120px]">
-                <thead>
-                  <tr className="border-b">
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Reference</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Customer</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Payee Details</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Bank / SWIFT</th>
-                    <th className="px-4 py-3 text-right font-semibold text-gray-700">Amount</th>
-                    <th className="px-4 py-3 text-center font-semibold text-gray-700">Status</th>
-                    <th className="px-4 py-3 text-center font-semibold text-gray-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPayments.map((payment) => {
-                    const isLoading = actionLoadingId === payment.id;
-                    const canVerify = payment.status === 'Under Review';
-                    const canReject = payment.status === 'Under Review';
-                    const canSubmit = payment.status === 'Verified';
-
-                    return (
-                      <tr key={payment.id} className="border-b align-top hover:bg-gray-50">
-                        <td className="px-4 py-4">
-                          <p className="font-semibold">{payment.paymentReference}</p>
-                          <p className="mt-1 text-xs text-gray-500">
-                            {new Date(payment.createdAt).toLocaleString()}
-                          </p>
-                        </td>
-                        <td className="px-4 py-4">
-                          <p className="font-semibold">{payment.customerName}</p>
-                          <p className="mt-1 font-mono text-xs text-gray-500">
-                            {payment.customerAccountNumber}
-                          </p>
-                        </td>
-                        <td className="px-4 py-4">
-                          <p className="font-semibold">{payment.beneficiaryName}</p>
-                          <p className="mt-1 font-mono text-xs text-gray-500">
-                            {payment.recipientAccountNumber}
-                          </p>
-                        </td>
-                        <td className="px-4 py-4">
-                          <p className="font-semibold">{payment.recipientBankName}</p>
-                          <p className="mt-1 text-xs text-gray-500">{payment.country}</p>
-                          <p className="mt-2 inline-flex rounded bg-slate-100 px-2 py-1 font-mono text-xs font-bold text-slate-700">
-                            {payment.swiftCode}
-                          </p>
-                        </td>
-                        <td className="px-4 py-4 text-right font-semibold">
-                          {payment.currency} {payment.amount.toLocaleString()}
-                        </td>
-                        <td className="px-4 py-4 text-center">
-                          <EmployeeStatusBadge status={payment.status} />
-                          {payment.swiftReference && (
-                            <p className="mt-2 font-mono text-xs text-blue-900">{payment.swiftReference}</p>
-                          )}
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="mx-auto flex max-w-44 flex-col gap-2">
-                            <Button
-                              type="button"
-                              variant="primary"
-                              onClick={() => openConfirmation({ type: 'verify', payment })}
-                              isLoading={isLoading && canVerify}
-                              disabled={!canVerify || isLoading}
-                              className="w-full"
-                            >
-                              Verify
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              onClick={() => openConfirmation({ type: 'submit', payment })}
-                              isLoading={isLoading && canSubmit}
-                              disabled={!canSubmit || isLoading}
-                              className="w-full"
-                            >
-                              Submit to SWIFT
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => openConfirmation({ type: 'reject', payment })}
-                              isLoading={isLoading && canReject}
-                              disabled={!canReject || isLoading}
-                              className="w-full border-red-200 text-red-700 hover:bg-red-50"
-                            >
-                              Reject
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <EmployeePaymentsContent
+            payments={filteredPayments}
+            isLoading={paymentsLoading}
+            actionLoadingId={actionLoadingId}
+            onOpenConfirmation={openConfirmation}
+          />
         </Card>
 
         {pendingAction && (
@@ -274,6 +226,145 @@ const EmployeeStatusBadge: React.FC<{ status: EmployeePaymentReview['status'] }>
   </span>
 );
 
+interface EmployeePaymentsContentProps {
+  payments: EmployeePaymentReview[];
+  isLoading: boolean;
+  actionLoadingId: string | null;
+  onOpenConfirmation: (action: PendingAction) => void;
+}
+
+const EmployeePaymentsContent: React.FC<EmployeePaymentsContentProps> = ({
+  payments,
+  isLoading,
+  actionLoadingId,
+  onOpenConfirmation,
+}) => {
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (payments.length === 0) {
+    return <p className="py-8 text-center text-gray-600">No transactions match this filter.</p>;
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[1120px]">
+        <thead>
+          <tr className="border-b">
+            <th className="px-4 py-3 text-left font-semibold text-gray-700">Reference</th>
+            <th className="px-4 py-3 text-left font-semibold text-gray-700">Customer</th>
+            <th className="px-4 py-3 text-left font-semibold text-gray-700">Payee Details</th>
+            <th className="px-4 py-3 text-left font-semibold text-gray-700">Bank / SWIFT</th>
+            <th className="px-4 py-3 text-right font-semibold text-gray-700">Amount</th>
+            <th className="px-4 py-3 text-center font-semibold text-gray-700">Status</th>
+            <th className="px-4 py-3 text-center font-semibold text-gray-700">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {payments.map((payment) => (
+            <EmployeePaymentRow
+              key={payment.id}
+              payment={payment}
+              isLoading={actionLoadingId === payment.id}
+              onOpenConfirmation={onOpenConfirmation}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+interface EmployeePaymentRowProps {
+  payment: EmployeePaymentReview;
+  isLoading: boolean;
+  onOpenConfirmation: (action: PendingAction) => void;
+}
+
+const EmployeePaymentRow: React.FC<EmployeePaymentRowProps> = ({
+  payment,
+  isLoading,
+  onOpenConfirmation,
+}) => {
+  const canVerify = payment.status === 'Under Review';
+  const canReject = payment.status === 'Under Review';
+  const canSubmit = payment.status === 'Verified';
+
+  return (
+    <tr className="border-b align-top hover:bg-gray-50">
+      <td className="px-4 py-4">
+        <p className="font-semibold">{payment.paymentReference}</p>
+        <p className="mt-1 text-xs text-gray-500">
+          {new Date(payment.createdAt).toLocaleString()}
+        </p>
+      </td>
+      <td className="px-4 py-4">
+        <p className="font-semibold">{payment.customerName}</p>
+        <p className="mt-1 font-mono text-xs text-gray-500">
+          {payment.customerAccountNumber}
+        </p>
+      </td>
+      <td className="px-4 py-4">
+        <p className="font-semibold">{payment.beneficiaryName}</p>
+        <p className="mt-1 font-mono text-xs text-gray-500">
+          {payment.recipientAccountNumber}
+        </p>
+      </td>
+      <td className="px-4 py-4">
+        <p className="font-semibold">{payment.recipientBankName}</p>
+        <p className="mt-1 text-xs text-gray-500">{payment.country}</p>
+        <p className="mt-2 inline-flex rounded bg-slate-100 px-2 py-1 font-mono text-xs font-bold text-slate-700">
+          {payment.swiftCode}
+        </p>
+      </td>
+      <td className="px-4 py-4 text-right font-semibold">
+        {payment.currency} {payment.amount.toLocaleString()}
+      </td>
+      <td className="px-4 py-4 text-center">
+        <EmployeeStatusBadge status={payment.status} />
+        {payment.swiftReference && (
+          <p className="mt-2 font-mono text-xs text-blue-900">{payment.swiftReference}</p>
+        )}
+      </td>
+      <td className="px-4 py-4">
+        <div className="mx-auto flex max-w-44 flex-col gap-2">
+          <Button
+            type="button"
+            variant="primary"
+            onClick={() => onOpenConfirmation({ type: 'verify', payment })}
+            isLoading={isLoading && canVerify}
+            disabled={!canVerify || isLoading}
+            className="w-full"
+          >
+            Verify
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => onOpenConfirmation({ type: 'submit', payment })}
+            isLoading={isLoading && canSubmit}
+            disabled={!canSubmit || isLoading}
+            className="w-full"
+          >
+            Submit to SWIFT
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenConfirmation({ type: 'reject', payment })}
+            isLoading={isLoading && canReject}
+            disabled={!canReject || isLoading}
+            className="w-full border-red-200 text-red-700 hover:bg-red-50"
+          >
+            Reject
+          </Button>
+        </div>
+      </td>
+    </tr>
+  );
+};
+
 interface TransactionConfirmationDialogProps {
   action: PendingAction;
   checked: boolean;
@@ -296,18 +387,8 @@ const TransactionConfirmationDialog: React.FC<TransactionConfirmationDialogProps
   onConfirm,
 }) => {
   const { payment, type } = action;
-  const isSubmitAction = type === 'submit';
   const isRejectAction = type === 'reject';
-  const title = isSubmitAction
-    ? 'Submit Transaction to SWIFT'
-    : isRejectAction
-      ? 'Reject Transaction'
-      : 'Verify Transaction';
-  const confirmationLabel = isSubmitAction
-    ? 'I confirm this transaction has been verified and is ready for simulated SWIFT submission.'
-    : isRejectAction
-      ? 'I confirm this transaction should be rejected and returned for correction.'
-      : 'I confirm the payee account information and SWIFT/BIC details are appropriate and correct.';
+  const copy = actionCopy[type];
   const trimmedRejectionReason = rejectionReason.trim();
   const isRejectionReasonValid = !isRejectAction || validationPatterns.rejectionReason.test(trimmedRejectionReason);
   const showRejectionReasonError = isRejectAction && trimmedRejectionReason.length > 0 && !isRejectionReasonValid;
@@ -315,18 +396,18 @@ const TransactionConfirmationDialog: React.FC<TransactionConfirmationDialogProps
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/55 px-4 py-6">
-      <section
-        role="dialog"
+      <dialog
+        open
         aria-modal="true"
         aria-labelledby="employee-confirmation-title"
-        className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="m-0 w-full max-w-3xl overflow-hidden rounded-2xl bg-white p-0 shadow-2xl"
       >
         <div className="border-b border-slate-200 px-6 py-5">
           <p className="text-sm font-black uppercase tracking-wide text-blue-900">
             Employee confirmation required
           </p>
           <h2 id="employee-confirmation-title" className="mt-1 text-2xl font-black text-slate-950">
-            {title}
+            {copy.title}
           </h2>
           <p className="mt-2 text-sm font-semibold text-slate-600">
             Review the transaction details before continuing. This step prevents accidental verification or SWIFT submission.
@@ -347,44 +428,14 @@ const TransactionConfirmationDialog: React.FC<TransactionConfirmationDialogProps
             <ReviewBlock label="Amount" value={`${payment.currency} ${payment.amount.toLocaleString()}`} emphasized />
           </div>
 
-          {isSubmitAction && (
-            <div className="mt-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-900">
-              <p className="font-black">Verification record</p>
-              <p className="mt-1">
-                Verified by {payment.verifiedBy || 'employee'} {payment.verifiedAt ? `on ${new Date(payment.verifiedAt).toLocaleString()}` : ''}.
-              </p>
-              {payment.verificationNotes && (
-                <p className="mt-1 font-semibold">{payment.verificationNotes}</p>
-              )}
-            </div>
-          )}
+          {type === 'submit' && <VerificationRecord payment={payment} />}
 
           {isRejectAction && (
-            <div className="mt-5">
-              <label htmlFor="rejection-reason" className="text-sm font-black text-slate-700">
-                Rejection reason
-              </label>
-              <textarea
-                id="rejection-reason"
-                value={rejectionReason}
-                onChange={(event) => onRejectionReasonChange(event.target.value)}
-                rows={4}
-                minLength={5}
-                maxLength={250}
-                required
-                placeholder="Explain why this transaction cannot be verified."
-                className={`mt-2 w-full rounded-xl border px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:ring-2 ${
-                  showRejectionReasonError
-                    ? 'border-red-500 focus:border-red-600 focus:ring-red-600/20'
-                    : 'border-slate-300 focus:border-blue-900 focus:ring-blue-900/20'
-                }`}
-              />
-              <p className={`mt-2 text-xs font-semibold ${showRejectionReasonError ? 'text-red-600' : 'text-slate-500'}`}>
-                {showRejectionReasonError
-                  ? validationMessages.rejectionReason
-                  : 'Minimum 5 characters. Only basic punctuation is accepted by the backend.'}
-              </p>
-            </div>
+            <RejectionReasonField
+              rejectionReason={rejectionReason}
+              showError={showRejectionReasonError}
+              onChange={onRejectionReasonChange}
+            />
           )}
 
           <label className="mt-5 flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm font-bold text-blue-950">
@@ -394,7 +445,7 @@ const TransactionConfirmationDialog: React.FC<TransactionConfirmationDialogProps
               onChange={(event) => onCheckedChange(event.target.checked)}
               className="mt-1 h-4 w-4 rounded border-blue-300 text-blue-900 focus:ring-blue-900"
             />
-            <span>{confirmationLabel}</span>
+            <span>{copy.confirmationLabel}</span>
           </label>
         </div>
 
@@ -410,16 +461,16 @@ const TransactionConfirmationDialog: React.FC<TransactionConfirmationDialogProps
           </Button>
           <Button
             type="button"
-            variant={isSubmitAction ? 'secondary' : isRejectAction ? 'outline' : 'primary'}
+            variant={copy.buttonVariant}
             onClick={onConfirm}
             isLoading={isLoading}
             disabled={!canConfirm}
             className="sm:min-w-44"
           >
-            {isSubmitAction ? 'Confirm Submit' : isRejectAction ? 'Confirm Reject' : 'Confirm Verify'}
+            {copy.confirmLabel}
           </Button>
         </div>
-      </section>
+      </dialog>
     </div>
   );
 };
@@ -431,10 +482,97 @@ interface ReviewBlockProps {
   emphasized?: boolean;
 }
 
+const getReviewBlockValueClass = (mono: boolean, emphasized: boolean) => {
+  const fontClass = mono ? 'font-mono' : 'font-semibold';
+  const colorClass = emphasized ? 'text-blue-900' : 'text-slate-900';
+
+  return `mt-2 break-words text-sm ${fontClass} ${colorClass}`;
+};
+
+const getRejectionReasonFieldClass = (showError: boolean) => {
+  const baseClass = 'mt-2 w-full rounded-xl border px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:ring-2';
+
+  if (showError) {
+    return `${baseClass} border-red-500 focus:border-red-600 focus:ring-red-600/20`;
+  }
+
+  return `${baseClass} border-slate-300 focus:border-blue-900 focus:ring-blue-900/20`;
+};
+
+const getRejectionReasonHintClass = (showError: boolean) => {
+  const baseClass = 'mt-2 text-xs font-semibold';
+
+  if (showError) {
+    return `${baseClass} text-red-600`;
+  }
+
+  return `${baseClass} text-slate-500`;
+};
+
+const getRejectionReasonHint = (showError: boolean) => {
+  if (showError) {
+    return validationMessages.rejectionReason;
+  }
+
+  return 'Minimum 5 characters. Only basic punctuation is accepted by the backend.';
+};
+
+const formatVerificationRecord = (payment: EmployeePaymentReview) => {
+  const verifier = payment.verifiedBy || 'employee';
+
+  if (!payment.verifiedAt) {
+    return `Verified by ${verifier}.`;
+  }
+
+  return `Verified by ${verifier} on ${new Date(payment.verifiedAt).toLocaleString()}.`;
+};
+
+const VerificationRecord: React.FC<{ payment: EmployeePaymentReview }> = ({ payment }) => (
+  <div className="mt-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-900">
+    <p className="font-black">Verification record</p>
+    <p className="mt-1">{formatVerificationRecord(payment)}</p>
+    {payment.verificationNotes && (
+      <p className="mt-1 font-semibold">{payment.verificationNotes}</p>
+    )}
+  </div>
+);
+
+interface RejectionReasonFieldProps {
+  rejectionReason: string;
+  showError: boolean;
+  onChange: (reason: string) => void;
+}
+
+const RejectionReasonField: React.FC<RejectionReasonFieldProps> = ({
+  rejectionReason,
+  showError,
+  onChange,
+}) => (
+  <div className="mt-5">
+    <label htmlFor="rejection-reason" className="text-sm font-black text-slate-700">
+      Rejection reason
+    </label>
+    <textarea
+      id="rejection-reason"
+      value={rejectionReason}
+      onChange={(event) => onChange(event.target.value)}
+      rows={4}
+      minLength={5}
+      maxLength={250}
+      required
+      placeholder="Explain why this transaction cannot be verified."
+      className={getRejectionReasonFieldClass(showError)}
+    />
+    <p className={getRejectionReasonHintClass(showError)}>
+      {getRejectionReasonHint(showError)}
+    </p>
+  </div>
+);
+
 const ReviewBlock: React.FC<ReviewBlockProps> = ({ label, value, mono = false, emphasized = false }) => (
   <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
     <p className="text-xs font-black uppercase tracking-wide text-slate-500">{label}</p>
-    <p className={`mt-2 break-words text-sm ${mono ? 'font-mono' : 'font-semibold'} ${emphasized ? 'text-blue-900' : 'text-slate-900'}`}>
+    <p className={getReviewBlockValueClass(mono, emphasized)}>
       {value}
     </p>
   </div>

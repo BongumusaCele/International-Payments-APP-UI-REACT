@@ -1,8 +1,8 @@
 export const validationPatterns = {
   personName: /^[A-Za-z][A-Za-z' -]{1,49}$/,
   username: /^[A-Za-z][A-Za-z0-9._-]{2,29}$/,
-  employeeUsername: /^[A-Za-z0-9_]{3,30}$/,
-  employeePassword: /^[A-Za-z0-9@#$!%*?&._-]{8,100}$/,
+  employeeUsername: /^\w{3,30}$/,
+  employeePassword: /^[\w@#$!%*?&.-]{8,100}$/,
   swiftCode: /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/,
   beneficiaryAccountNumber: /^\d{6,20}$/,
   userAccountNumber: /^\d{6,10}$/,

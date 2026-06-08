@@ -4,6 +4,8 @@ import { ChevronDown, LogOut, User, WalletCards } from 'lucide-react';
 import { Navigation } from './Navigation';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAppDispatch';
 import { logout } from '../../store/slices/authSlice';
+import { useClickOutside } from '../../hooks/useClickOutside';
+import { AppShell } from './AppShell';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -13,24 +15,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <Navigation
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        onOpen={() => setIsSidebarOpen(true)}
-      />
-      <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 border-b border-slate-200/70 bg-slate-50/85 backdrop-blur dark:border-slate-700/50 dark:bg-slate-900/85 sm:px-6 px-4 py-4 lg:px-8">
-          <div className="mx-auto flex max-w-7xl justify-end">
-            <AccountMenu />
-          </div>
-        </header>
-
-        <main className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          {children}
-        </main>
-      </div>
-    </div>
+    <AppShell
+      navigation={(
+        <Navigation
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          onOpen={() => setIsSidebarOpen(true)}
+        />
+      )}
+      accountMenu={<AccountMenu />}
+    >
+      {children}
+    </AppShell>
   );
 };
 
@@ -39,18 +35,8 @@ const AccountMenu: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.auth);
   const [isOpen, setIsOpen] = React.useState(false);
-  const menuRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const closeMenu = React.useCallback(() => setIsOpen(false), []);
+  const menuRef = useClickOutside<HTMLDivElement>(closeMenu);
 
   const initials = user?.fullName
     ?.split(' ')

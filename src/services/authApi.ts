@@ -1,5 +1,6 @@
 import { LoginRequest, LoginResult, RegisterRequest, RegisterResult, VerifyMfaRequest } from '../types';
 import { API_BASE_URL } from './apiConfig';
+import { readErrorMessage } from './apiErrors';
 
 interface ApiRegisterResponse {
   success: boolean;
@@ -21,25 +22,6 @@ interface ApiLoginResponse {
   token?: string;
   token_Expires_On?: string;
 }
-
-const readErrorMessage = async (response: Response) => {
-  try {
-    const body = await response.json();
-
-    const validationValues = body?.errors ? Object.values(body.errors) : Object.values(body);
-    const modelStateMessages = validationValues
-      .flatMap((value) => Array.isArray(value) ? value : [])
-      .filter((value): value is string => typeof value === 'string');
-
-    if (modelStateMessages.length > 0) return modelStateMessages.join(' ');
-    if (typeof body?.message === 'string') return body.message;
-    if (typeof body?.title === 'string') return body.title;
-  } catch {
-    // Fall through to the generic HTTP message below.
-  }
-
-  return `Request failed with status ${response.status}`;
-};
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<LoginResult> => {

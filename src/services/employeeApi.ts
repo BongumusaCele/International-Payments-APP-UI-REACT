@@ -5,6 +5,7 @@ import {
   EmployeeUser,
 } from '../types';
 import { API_BASE_URL } from './apiConfig';
+import { readErrorMessage } from './apiErrors';
 
 interface EmployeeLoginResponse {
   success: boolean;
@@ -48,31 +49,6 @@ interface ApiEmployeePaymentResponse {
   message?: string;
   success?: boolean;
 }
-
-const readErrorMessage = async (response: Response) => {
-  const fallbackMessage = `Request failed with status ${response.status}`;
-
-  try {
-    const responseText = await response.text();
-    if (!responseText) return fallbackMessage;
-
-    const body = JSON.parse(responseText) as Record<string, unknown>;
-    const validationValues = body.errors && typeof body.errors === 'object'
-      ? Object.values(body.errors)
-      : Object.values(body);
-    const modelStateMessages = validationValues
-      .flatMap((value) => Array.isArray(value) ? value : [])
-      .filter((value): value is string => typeof value === 'string');
-
-    if (modelStateMessages.length > 0) return modelStateMessages.join(' ');
-    if (typeof body.message === 'string') return body.message;
-    if (typeof body.title === 'string') return body.title;
-  } catch {
-    // Fall through to the generic HTTP message below.
-  }
-
-  return fallbackMessage;
-};
 
 const employeeAuthHeaders = (): Record<string, string> => {
   const token = sessionStorage.getItem('employeeToken');
@@ -171,6 +147,33 @@ const postJsonAction = async (path: string, body: Record<string, unknown>) => {
   }
 };
 
+const fetchEmployeePayments = async (): Promise<EmployeePaymentReview[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/employee/payments`, {
+    headers: employeeAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  const body = await response.json() as ApiEmployeePaymentResponse[];
+  return body.map(mapPayment);
+};
+
+const getUpdatedPayment = async (
+  paymentId: string,
+  missingPaymentMessage: string
+) => {
+  const payments = await fetchEmployeePayments();
+  const payment = payments.find((item) => item.id === paymentId);
+
+  if (!payment) {
+    throw new Error(missingPaymentMessage);
+  }
+
+  return payment;
+};
+
 export const employeeApi = {
   login: async (data: EmployeeLoginRequest): Promise<EmployeeLoginResult> => {
     const response = await fetch(`${API_BASE_URL}/api/employee/auth/login`, {
@@ -215,16 +218,7 @@ export const employeeApi = {
   },
 
   getPayments: async (): Promise<EmployeePaymentReview[]> => {
-    const response = await fetch(`${API_BASE_URL}/api/employee/payments`, {
-      headers: employeeAuthHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error(await readErrorMessage(response));
-    }
-
-    const body = await response.json() as ApiEmployeePaymentResponse[];
-    return body.map(mapPayment);
+    return fetchEmployeePayments();
   },
 
   getSummary: async (): Promise<EmployeePaymentSummary> => {
@@ -233,26 +227,12 @@ export const employeeApi = {
 
   verifyPayment: async (paymentId: string): Promise<EmployeePaymentReview> => {
     await postAction(`/api/employee/payments/${paymentId}/verify`);
-    const payments = await employeeApi.getPayments();
-    const payment = payments.find((item) => item.id === paymentId);
-
-    if (!payment) {
-      throw new Error('Verified transaction was not returned by the backend');
-    }
-
-    return payment;
+    return getUpdatedPayment(paymentId, 'Verified transaction was not returned by the backend');
   },
 
   submitToSwift: async (paymentId: string): Promise<EmployeePaymentReview> => {
     await postAction(`/api/employee/payments/${paymentId}/submit-to-swift`);
-    const payments = await employeeApi.getPayments();
-    const payment = payments.find((item) => item.id === paymentId);
-
-    if (!payment) {
-      throw new Error('Submitted transaction was not returned by the backend');
-    }
-
-    return payment;
+    return getUpdatedPayment(paymentId, 'Submitted transaction was not returned by the backend');
   },
 
   rejectPayment: async (
@@ -263,13 +243,6 @@ export const employeeApi = {
       rejection_Reason: rejectionReason,
     });
 
-    const payments = await employeeApi.getPayments();
-    const payment = payments.find((item) => item.id === paymentId);
-
-    if (!payment) {
-      throw new Error('Rejected transaction was not returned by the backend');
-    }
-
-    return payment;
+    return getUpdatedPayment(paymentId, 'Rejected transaction was not returned by the backend');
   },
 };

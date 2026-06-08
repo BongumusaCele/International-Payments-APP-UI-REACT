@@ -1,5 +1,6 @@
 import { Payment, PaymentCreateRequest, PaymentSummary } from '../types';
 import { API_BASE_URL } from './apiConfig';
+import { readErrorMessage } from './apiErrors';
 
 const authHeaders = (): Record<string, string> => {
   const token = sessionStorage.getItem('token');
@@ -38,31 +39,6 @@ interface ApiPaymentSummaryResponse {
   rejected_Count: number;
   completed_Count: number;
 }
-
-const readErrorMessage = async (response: Response) => {
-  const fallbackMessage = `Request failed with status ${response.status}`;
-
-  try {
-    const responseText = await response.text();
-    if (!responseText) return fallbackMessage;
-
-    const body = JSON.parse(responseText) as Record<string, unknown>;
-    const validationValues = body.errors && typeof body.errors === 'object'
-      ? Object.values(body.errors)
-      : Object.values(body);
-    const modelStateMessages = validationValues
-      .flatMap((value) => Array.isArray(value) ? value : [])
-      .filter((value): value is string => typeof value === 'string');
-
-    if (modelStateMessages.length > 0) return modelStateMessages.join(' ');
-    if (typeof body.message === 'string') return body.message;
-    if (typeof body.title === 'string') return body.title;
-  } catch {
-    // Fall through to the generic HTTP message below.
-  }
-
-  return fallbackMessage;
-};
 
 const ensureNumericId = (value: string, label: string) => {
   const numericValue = Number(value);

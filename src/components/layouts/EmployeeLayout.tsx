@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAppDispatch';
 import { employeeLogout } from '../../store/slices/employeeSlice';
+import { useClickOutside } from '../../hooks/useClickOutside';
+import { AppShell } from './AppShell';
 
 interface EmployeeLayoutProps {
   children: React.ReactNode;
@@ -23,28 +25,42 @@ const navItems = [
   { to: '/employee/payments', label: 'Review Queue', icon: ClipboardCheck },
 ];
 
+const getNavLinkClass = (isActive: boolean) => {
+  const baseClass = 'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition';
+
+  if (isActive) {
+    return `${baseClass} bg-blue-900 text-white shadow-lg shadow-blue-900/20`;
+  }
+
+  return `${baseClass} text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white`;
+};
+
+const getChevronClass = (isOpen: boolean) => {
+  const baseClass = 'h-4 w-4 text-slate-400 transition dark:text-slate-500';
+
+  if (isOpen) {
+    return `${baseClass} rotate-180`;
+  }
+
+  return baseClass;
+};
+
 export const EmployeeLayout: React.FC<EmployeeLayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <EmployeeNavigation
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        onOpen={() => setIsSidebarOpen(true)}
-      />
-      <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 border-b border-slate-200/70 bg-slate-50/85 px-4 py-4 backdrop-blur dark:border-slate-700/50 dark:bg-slate-900/85 sm:px-6 lg:px-8">
-          <div className="mx-auto flex max-w-7xl justify-end">
-            <EmployeeAccountMenu />
-          </div>
-        </header>
-
-        <main className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          {children}
-        </main>
-      </div>
-    </div>
+    <AppShell
+      navigation={(
+        <EmployeeNavigation
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          onOpen={() => setIsSidebarOpen(true)}
+        />
+      )}
+      accountMenu={<EmployeeAccountMenu />}
+    >
+      {children}
+    </AppShell>
   );
 };
 
@@ -64,7 +80,7 @@ const EmployeeNavigation: React.FC<EmployeeNavigationProps> = ({ isOpen, onClose
           </span>
           <div>
             <p className="text-base font-black leading-tight text-slate-950 dark:text-white">
-              Employee
+              <span className="block">Employee</span>
               <span className="block">Payments Portal</span>
             </p>
           </div>
@@ -88,13 +104,7 @@ const EmployeeNavigation: React.FC<EmployeeNavigationProps> = ({ isOpen, onClose
               key={item.to}
               to={item.to}
               onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition ${
-                  isActive
-                    ? 'bg-blue-900 text-white shadow-lg shadow-blue-900/20'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
-                }`
-              }
+              className={({ isActive }) => getNavLinkClass(isActive)}
             >
               <Icon className="h-5 w-5" />
               {item.label}
@@ -146,18 +156,8 @@ const EmployeeAccountMenu: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.employee);
   const [isOpen, setIsOpen] = React.useState(false);
-  const menuRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const closeMenu = React.useCallback(() => setIsOpen(false), []);
+  const menuRef = useClickOutside<HTMLDivElement>(closeMenu);
 
   const initials = user?.fullName
     .split(' ')
@@ -189,7 +189,7 @@ const EmployeeAccountMenu: React.FC = () => {
           <span className="block max-w-44 truncate text-sm font-black text-slate-950 dark:text-white">{user?.fullName}</span>
           <span className="mt-1 block max-w-44 truncate text-xs font-semibold text-slate-500 dark:text-slate-400">{user?.role}</span>
         </span>
-        <ChevronDown className={`h-4 w-4 text-slate-400 transition dark:text-slate-500 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={getChevronClass(isOpen)} />
       </button>
 
       {isOpen && (

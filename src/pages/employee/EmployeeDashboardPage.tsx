@@ -61,45 +61,64 @@ export const EmployeeDashboardPage: React.FC = () => {
         </div>
 
         <Card title="Recent Payment Instructions">
-          {paymentsLoading ? (
-            <LoadingSpinner />
-          ) : recentPayments.length === 0 ? (
-            <p className="py-8 text-center text-gray-600">No transactions awaiting review.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Reference</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Customer</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Beneficiary</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">SWIFT/BIC</th>
-                    <th className="px-4 py-3 text-right font-semibold text-gray-700">Amount</th>
-                    <th className="px-4 py-3 text-center font-semibold text-gray-700">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentPayments.map((payment) => (
-                    <tr key={payment.id} className="border-b hover:bg-gray-50">
-                      <td className="px-4 py-3 font-semibold">{payment.paymentReference}</td>
-                      <td className="px-4 py-3">{payment.customerName}</td>
-                      <td className="px-4 py-3">{payment.beneficiaryName}</td>
-                      <td className="px-4 py-3 font-mono text-sm">{payment.swiftCode}</td>
-                      <td className="px-4 py-3 text-right font-semibold">
-                        {payment.currency} {payment.amount.toLocaleString()}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <EmployeeStatusBadge status={payment.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <RecentPaymentsContent
+            isLoading={paymentsLoading}
+            payments={recentPayments}
+          />
         </Card>
       </div>
     </EmployeeLayout>
+  );
+};
+
+interface RecentPaymentsContentProps {
+  isLoading: boolean;
+  payments: EmployeePaymentReview[];
+}
+
+const RecentPaymentsContent: React.FC<RecentPaymentsContentProps> = ({
+  isLoading,
+  payments,
+}) => {
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (payments.length === 0) {
+    return <p className="py-8 text-center text-gray-600">No transactions awaiting review.</p>;
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b">
+            <th className="px-4 py-3 text-left font-semibold text-gray-700">Reference</th>
+            <th className="px-4 py-3 text-left font-semibold text-gray-700">Customer</th>
+            <th className="px-4 py-3 text-left font-semibold text-gray-700">Beneficiary</th>
+            <th className="px-4 py-3 text-left font-semibold text-gray-700">SWIFT/BIC</th>
+            <th className="px-4 py-3 text-right font-semibold text-gray-700">Amount</th>
+            <th className="px-4 py-3 text-center font-semibold text-gray-700">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {payments.map((payment) => (
+            <tr key={payment.id} className="border-b hover:bg-gray-50">
+              <td className="px-4 py-3 font-semibold">{payment.paymentReference}</td>
+              <td className="px-4 py-3">{payment.customerName}</td>
+              <td className="px-4 py-3">{payment.beneficiaryName}</td>
+              <td className="px-4 py-3 font-mono text-sm">{payment.swiftCode}</td>
+              <td className="px-4 py-3 text-right font-semibold">
+                {payment.currency} {payment.amount.toLocaleString()}
+              </td>
+              <td className="px-4 py-3 text-center">
+                <EmployeeStatusBadge status={payment.status} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };
 
