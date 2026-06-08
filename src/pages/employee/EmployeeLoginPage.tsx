@@ -1,19 +1,20 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BadgeCheck, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Alert } from '../../components/ui/Alert';
 import { AuthLayout } from '../../components/layouts/AuthLayout';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { clearEmployeeError, employeeLogin } from '../../store/slices/employeeSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAppDispatch';
+import { validationMessages, validationPatterns } from '../../utils/validation';
 
 export const EmployeeLoginPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { loading, error, isAuthenticated } = useAppSelector((state) => state.employee);
-  const [employeeNumber, setEmployeeNumber] = React.useState('EMP001');
-  const [password, setPassword] = React.useState('Password123!');
+  const [employeeNumber, setEmployeeNumber] = React.useState('');
+  const [password, setPassword] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
   const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
 
@@ -35,8 +36,17 @@ export const EmployeeLoginPage: React.FC = () => {
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
-    if (!employeeNumber.trim()) errors.employeeNumber = 'Employee number is required';
+    const normalizedEmployeeNumber = employeeNumber.trim();
+
+    if (!normalizedEmployeeNumber) errors.employeeNumber = 'Employee username is required';
+    else if (!validationPatterns.employeeUsername.test(normalizedEmployeeNumber)) {
+      errors.employeeNumber = validationMessages.employeeUsername;
+    }
+
     if (!password) errors.password = 'Password is required';
+    else if (!validationPatterns.employeePassword.test(password)) {
+      errors.password = validationMessages.employeePassword;
+    }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -58,13 +68,6 @@ export const EmployeeLoginPage: React.FC = () => {
     }
   };
 
-  const fillDemoLogin = (number: string) => {
-    setEmployeeNumber(number);
-    setPassword('Password123!');
-    setFormErrors({});
-    if (error) dispatch(clearEmployeeError());
-  };
-
   return (
     <AuthLayout
       title="Employee Sign In"
@@ -78,52 +81,36 @@ export const EmployeeLoginPage: React.FC = () => {
         />
       )}
 
-      <div className="mb-5 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
-        <div className="mb-3 flex items-center gap-2 font-black">
-          <BadgeCheck className="h-5 w-5" />
-          Demo employee credentials
-        </div>
-        <div className="grid gap-2 sm:grid-cols-2">
-          <button
-            type="button"
-            onClick={() => fillDemoLogin('EMP001')}
-            className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-left font-bold hover:border-blue-900"
-          >
-            EMP001
-            <span className="block text-xs font-semibold text-slate-500">Payments Officer</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemoLogin('EMP002')}
-            className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-left font-bold hover:border-blue-900"
-          >
-            EMP002
-            <span className="block text-xs font-semibold text-slate-500">Senior Officer</span>
-          </button>
-        </div>
-        <p className="mt-3 font-semibold">Password for both: Password123!</p>
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-5">
         <Input
           type="text"
-          label="Employee Number"
-          placeholder="EMP001"
+          label="Employee Username"
+          name="employeeNumber"
+          placeholder="employee1"
           value={employeeNumber}
           onChange={(event) => handleChange('employeeNumber', event.target.value)}
           error={formErrors.employeeNumber}
           className="auth-input"
+          autoComplete="username"
+          minLength={3}
+          maxLength={30}
+          pattern="[A-Za-z0-9_]{3,30}"
           required
         />
 
         <Input
           type={showPassword ? 'text' : 'password'}
           label="Password"
+          name="password"
           placeholder="Enter your password"
           value={password}
           onChange={(event) => handleChange('password', event.target.value)}
           error={formErrors.password}
           className="auth-input"
+          autoComplete="current-password"
+          minLength={8}
+          maxLength={100}
+          pattern="[A-Za-z0-9@#$!%*?&._-]{8,100}"
           rightElement={
             <button
               type="button"

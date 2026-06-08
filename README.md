@@ -2,7 +2,7 @@
 
 React/Vite frontend for customer international payments and a demo bank employee review portal.
 
-The app connects to an external backend API through `VITE_API_BASE_URL`. Employee portal data is currently mocked in the frontend.
+The app connects to an external backend API through `VITE_API_BASE_URL`, including the employee payment review portal.
 
 ## Run Locally
 
@@ -49,10 +49,10 @@ npm run typecheck
 
 ## Employee Demo Login
 
-| Employee number | Password | Role |
+| Employee username | Password | Role |
 | --- | --- | --- |
-| `EMP001` | `Password123!` | Payments Officer |
-| `EMP002` | `Password123!` | Senior Payments Officer |
+| `employee1` | `Password123!` | Payments Officer |
+| `employee2` | `Password123!` | Senior Payments Officer |
 
 Employees can review transactions, verify payee/SWIFT details, and submit verified payments to a simulated SWIFT flow.
 

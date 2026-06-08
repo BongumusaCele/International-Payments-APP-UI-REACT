@@ -133,6 +133,7 @@ export interface EmployeeUser {
 export interface EmployeeAuthState {
   user: EmployeeUser | null;
   isAuthenticated: boolean;
+  token: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -161,6 +162,7 @@ export interface EmployeePaymentReview {
   swiftReference?: string;
   submittedAt?: string;
   verificationNotes?: string;
+  rejectionReason?: string;
 }
 
 export interface EmployeePaymentSummary {

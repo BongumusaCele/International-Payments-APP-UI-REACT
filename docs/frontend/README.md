@@ -158,22 +158,22 @@ If `.env` is missing, the app falls back to the deployed Azure API URL configure
 
 ## Employee Portal Demo
 
-The employee portal currently uses frontend-only mock data until backend employee APIs are available.
+The employee portal calls backend employee APIs for login, logout, payment review, verification, and simulated SWIFT submission.
 
-| Employee number | Password | Role |
+| Employee username | Password | Role |
 | --- | --- | --- |
-| `EMP001` | `Password123!` | Payments Officer |
-| `EMP002` | `Password123!` | Senior Payments Officer |
+| `employee1` | `Password123!` | Payments Officer |
+| `employee2` | `Password123!` | Senior Payments Officer |
 
-Employees can review mock customer transactions, verify payee account and SWIFT/BIC details, and submit verified items to a simulated SWIFT flow.
+Employees can review customer transactions, verify payee account and SWIFT/BIC details, and submit verified items to a simulated SWIFT flow.
 
 ## Data Sources
 
 - `src/services/authApi.ts` calls backend authentication endpoints.
 - `src/services/beneficiaryApi.ts` calls backend beneficiary endpoints.
 - `src/services/paymentApi.ts` calls backend payment endpoints.
+- `src/services/employeeApi.ts` calls backend employee authentication and payment review endpoints.
 - `src/services/mockApi.ts` contains in-memory mock data used by profile-related flows.
-- `src/services/employeeMockApi.ts` contains in-memory mock data used by employee portal flows.
 
 ## Troubleshooting
 

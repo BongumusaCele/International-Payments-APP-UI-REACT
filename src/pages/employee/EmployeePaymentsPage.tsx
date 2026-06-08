@@ -8,25 +8,28 @@ import {
   clearEmployeeError,
   fetchEmployeePaymentSummary,
   fetchEmployeePayments,
+  rejectEmployeePayment,
   submitEmployeePaymentToSwift,
   verifyEmployeePayment,
 } from '../../store/slices/employeeSlice';
 import { EmployeePaymentReview } from '../../types';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAppDispatch';
+import { validationMessages, validationPatterns } from '../../utils/validation';
 
 const statuses = ['All', 'Under Review', 'Verified', 'Submitted to SWIFT', 'Rejected'];
 
 type PendingAction = {
-  type: 'verify' | 'submit';
+  type: 'verify' | 'submit' | 'reject';
   payment: EmployeePaymentReview;
 };
 
 export const EmployeePaymentsPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { user, payments, paymentsLoading, actionLoadingId, error } = useAppSelector((state) => state.employee);
+  const { payments, paymentsLoading, actionLoadingId, error } = useAppSelector((state) => state.employee);
   const [filterStatus, setFilterStatus] = React.useState('All');
   const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null);
   const [isConfirmationChecked, setIsConfirmationChecked] = React.useState(false);
+  const [rejectionReason, setRejectionReason] = React.useState('');
 
   React.useEffect(() => {
     dispatch(fetchEmployeePayments());
@@ -46,6 +49,7 @@ export const EmployeePaymentsPage: React.FC = () => {
   const openConfirmation = (action: PendingAction) => {
     setPendingAction(action);
     setIsConfirmationChecked(false);
+    setRejectionReason('');
     if (error) dispatch(clearEmployeeError());
   };
 
@@ -53,20 +57,31 @@ export const EmployeePaymentsPage: React.FC = () => {
     if (actionLoadingId) return;
     setPendingAction(null);
     setIsConfirmationChecked(false);
+    setRejectionReason('');
   };
 
   const handleVerify = async (paymentId: string) => {
-    if (!user) return;
-    const result = await dispatch(verifyEmployeePayment({ paymentId, employee: user }));
+    const result = await dispatch(verifyEmployeePayment({ paymentId }));
     if (verifyEmployeePayment.fulfilled.match(result)) {
       closeConfirmation();
     }
   };
 
   const handleSubmitToSwift = async (paymentId: string) => {
-    if (!user) return;
-    const result = await dispatch(submitEmployeePaymentToSwift({ paymentId, employee: user }));
+    const result = await dispatch(submitEmployeePaymentToSwift({ paymentId }));
     if (submitEmployeePaymentToSwift.fulfilled.match(result)) {
+      closeConfirmation();
+    }
+  };
+
+  const handleReject = async (paymentId: string) => {
+    const result = await dispatch(
+      rejectEmployeePayment({
+        paymentId,
+        rejectionReason: rejectionReason.trim(),
+      })
+    );
+    if (rejectEmployeePayment.fulfilled.match(result)) {
       closeConfirmation();
     }
   };
@@ -76,6 +91,11 @@ export const EmployeePaymentsPage: React.FC = () => {
 
     if (pendingAction.type === 'verify') {
       await handleVerify(pendingAction.payment.id);
+      return;
+    }
+
+    if (pendingAction.type === 'reject') {
+      await handleReject(pendingAction.payment.id);
       return;
     }
 
@@ -142,6 +162,7 @@ export const EmployeePaymentsPage: React.FC = () => {
                   {filteredPayments.map((payment) => {
                     const isLoading = actionLoadingId === payment.id;
                     const canVerify = payment.status === 'Under Review';
+                    const canReject = payment.status === 'Under Review';
                     const canSubmit = payment.status === 'Verified';
 
                     return (
@@ -202,6 +223,16 @@ export const EmployeePaymentsPage: React.FC = () => {
                             >
                               Submit to SWIFT
                             </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => openConfirmation({ type: 'reject', payment })}
+                              isLoading={isLoading && canReject}
+                              disabled={!canReject || isLoading}
+                              className="w-full border-red-200 text-red-700 hover:bg-red-50"
+                            >
+                              Reject
+                            </Button>
                           </div>
                         </td>
                       </tr>
@@ -218,7 +249,9 @@ export const EmployeePaymentsPage: React.FC = () => {
             action={pendingAction}
             checked={isConfirmationChecked}
             isLoading={actionLoadingId === pendingAction.payment.id}
+            rejectionReason={rejectionReason}
             onCheckedChange={setIsConfirmationChecked}
+            onRejectionReasonChange={setRejectionReason}
             onCancel={closeConfirmation}
             onConfirm={handleConfirmAction}
           />
@@ -245,7 +278,9 @@ interface TransactionConfirmationDialogProps {
   action: PendingAction;
   checked: boolean;
   isLoading: boolean;
+  rejectionReason: string;
   onCheckedChange: (checked: boolean) => void;
+  onRejectionReasonChange: (reason: string) => void;
   onCancel: () => void;
   onConfirm: () => void;
 }
@@ -254,16 +289,29 @@ const TransactionConfirmationDialog: React.FC<TransactionConfirmationDialogProps
   action,
   checked,
   isLoading,
+  rejectionReason,
   onCheckedChange,
+  onRejectionReasonChange,
   onCancel,
   onConfirm,
 }) => {
   const { payment, type } = action;
   const isSubmitAction = type === 'submit';
-  const title = isSubmitAction ? 'Submit Transaction to SWIFT' : 'Verify Transaction';
+  const isRejectAction = type === 'reject';
+  const title = isSubmitAction
+    ? 'Submit Transaction to SWIFT'
+    : isRejectAction
+      ? 'Reject Transaction'
+      : 'Verify Transaction';
   const confirmationLabel = isSubmitAction
     ? 'I confirm this transaction has been verified and is ready for simulated SWIFT submission.'
-    : 'I confirm the payee account information and SWIFT/BIC details are appropriate and correct.';
+    : isRejectAction
+      ? 'I confirm this transaction should be rejected and returned for correction.'
+      : 'I confirm the payee account information and SWIFT/BIC details are appropriate and correct.';
+  const trimmedRejectionReason = rejectionReason.trim();
+  const isRejectionReasonValid = !isRejectAction || validationPatterns.rejectionReason.test(trimmedRejectionReason);
+  const showRejectionReasonError = isRejectAction && trimmedRejectionReason.length > 0 && !isRejectionReasonValid;
+  const canConfirm = checked && isRejectionReasonValid;
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/55 px-4 py-6">
@@ -311,6 +359,34 @@ const TransactionConfirmationDialog: React.FC<TransactionConfirmationDialogProps
             </div>
           )}
 
+          {isRejectAction && (
+            <div className="mt-5">
+              <label htmlFor="rejection-reason" className="text-sm font-black text-slate-700">
+                Rejection reason
+              </label>
+              <textarea
+                id="rejection-reason"
+                value={rejectionReason}
+                onChange={(event) => onRejectionReasonChange(event.target.value)}
+                rows={4}
+                minLength={5}
+                maxLength={250}
+                required
+                placeholder="Explain why this transaction cannot be verified."
+                className={`mt-2 w-full rounded-xl border px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:ring-2 ${
+                  showRejectionReasonError
+                    ? 'border-red-500 focus:border-red-600 focus:ring-red-600/20'
+                    : 'border-slate-300 focus:border-blue-900 focus:ring-blue-900/20'
+                }`}
+              />
+              <p className={`mt-2 text-xs font-semibold ${showRejectionReasonError ? 'text-red-600' : 'text-slate-500'}`}>
+                {showRejectionReasonError
+                  ? validationMessages.rejectionReason
+                  : 'Minimum 5 characters. Only basic punctuation is accepted by the backend.'}
+              </p>
+            </div>
+          )}
+
           <label className="mt-5 flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm font-bold text-blue-950">
             <input
               type="checkbox"
@@ -334,13 +410,13 @@ const TransactionConfirmationDialog: React.FC<TransactionConfirmationDialogProps
           </Button>
           <Button
             type="button"
-            variant={isSubmitAction ? 'secondary' : 'primary'}
+            variant={isSubmitAction ? 'secondary' : isRejectAction ? 'outline' : 'primary'}
             onClick={onConfirm}
             isLoading={isLoading}
-            disabled={!checked}
+            disabled={!canConfirm}
             className="sm:min-w-44"
           >
-            {isSubmitAction ? 'Confirm Submit' : 'Confirm Verify'}
+            {isSubmitAction ? 'Confirm Submit' : isRejectAction ? 'Confirm Reject' : 'Confirm Verify'}
           </Button>
         </div>
       </section>

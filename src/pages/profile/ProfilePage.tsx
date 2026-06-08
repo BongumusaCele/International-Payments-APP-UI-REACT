@@ -7,6 +7,11 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Alert } from '../../components/ui/Alert';
 import { useNavigate } from 'react-router-dom';
+import {
+  isStrongPassword,
+  validationMessages,
+  validationPatterns,
+} from '../../utils/validation';
 
 export const ProfilePage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -52,19 +57,44 @@ export const ProfilePage: React.FC = () => {
       ...prev,
       [name]: value,
     }));
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: '',
+      }));
+    }
+  };
+
+  const validateProfileForm = () => {
+    const newErrors: Record<string, string> = {};
+    const fullName = formData.fullName.trim();
+    const email = formData.email.trim();
+    const phone = formData.phone.trim();
+
+    if (!fullName) newErrors.fullName = 'Full name is required';
+    else if (!validationPatterns.personName.test(fullName)) newErrors.fullName = validationMessages.personName;
+
+    if (!email) newErrors.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Enter a valid email address';
+
+    if (phone && !validationPatterns.phone.test(phone)) newErrors.phone = validationMessages.phone;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.id) return;
+    if (!validateProfileForm()) return;
 
     const result = await dispatch(
       updateProfile({
         userId: user.id,
         data: {
-          fullName: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
+          fullName: formData.fullName.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
         },
       })
     );
@@ -80,20 +110,21 @@ export const ProfilePage: React.FC = () => {
     e.preventDefault();
     if (!user?.id) return;
 
-    if (!passwordData.currentPassword) {
-      setErrors({ currentPassword: 'Current password is required' });
-      return;
+    const newErrors: Record<string, string> = {};
+
+    if (!passwordData.currentPassword) newErrors.currentPassword = 'Current password is required';
+    if (!passwordData.newPassword) newErrors.newPassword = 'New password is required';
+    else if (!isStrongPassword(passwordData.newPassword)) newErrors.newPassword = validationMessages.password;
+    if (passwordData.newPassword && passwordData.newPassword === passwordData.currentPassword) {
+      newErrors.newPassword = 'New password must be different from the current password';
+    }
+    if (!passwordData.confirmPassword) newErrors.confirmPassword = 'Confirm password is required';
+    else if (passwordData.newPassword !== passwordData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setErrors({ confirmPassword: 'Passwords do not match' });
-      return;
-    }
-
-    if (passwordData.newPassword.length < 6) {
-      setErrors({ newPassword: 'Password must be at least 6 characters' });
-      return;
-    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
     const result = await dispatch(
       changePassword({
@@ -143,6 +174,12 @@ export const ProfilePage: React.FC = () => {
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
+                error={errors.fullName}
+                minLength={2}
+                maxLength={50}
+                pattern="[A-Za-z][A-Za-z' -]{1,49}"
+                autoComplete="name"
+                required
               />
 
               <Input
@@ -151,6 +188,9 @@ export const ProfilePage: React.FC = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                error={errors.email}
+                autoComplete="email"
+                required
               />
 
               <Input
@@ -159,6 +199,10 @@ export const ProfilePage: React.FC = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
+                error={errors.phone}
+                maxLength={20}
+                pattern="\+?[0-9 ()-]{7,20}"
+                autoComplete="tel"
               />
 
               <div className="pt-4 border-t">
@@ -247,16 +291,23 @@ export const ProfilePage: React.FC = () => {
                 value={passwordData.currentPassword}
                 onChange={handlePasswordChange}
                 error={errors.currentPassword}
+                autoComplete="current-password"
+                maxLength={128}
+                required
               />
 
               <Input
                 type="password"
                 label="New Password"
                 name="newPassword"
-                placeholder="At least 6 characters"
+                placeholder="Use a strong password"
                 value={passwordData.newPassword}
                 onChange={handlePasswordChange}
                 error={errors.newPassword}
+                autoComplete="new-password"
+                minLength={12}
+                maxLength={128}
+                required
               />
 
               <Input
@@ -267,6 +318,10 @@ export const ProfilePage: React.FC = () => {
                 value={passwordData.confirmPassword}
                 onChange={handlePasswordChange}
                 error={errors.confirmPassword}
+                autoComplete="new-password"
+                minLength={12}
+                maxLength={128}
+                required
               />
 
               <div className="flex gap-4">

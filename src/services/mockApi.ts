@@ -1,4 +1,5 @@
 import { User, Beneficiary, Payment, LoginRequest, RegisterRequest, PaymentCreateRequest } from '../types';
+import { isStrongPassword, validationMessages } from '../utils/validation';
 
 // Mock data storage
 const mockUsers: Map<string, User> = new Map();
@@ -116,8 +117,8 @@ export const mockAuthApi = {
     if (!user) {
       throw new Error('User not found');
     }
-    if (newPassword.length < 6) {
-      throw new Error('Password must be at least 6 characters');
+    if (!isStrongPassword(newPassword)) {
+      throw new Error(validationMessages.password);
     }
     mockPasswords.set(username, newPassword);
   },
@@ -277,8 +278,8 @@ export const mockUserApi = {
       throw new Error('Current password is incorrect');
     }
 
-    if (newPassword.length < 6) {
-      throw new Error('Password must be at least 6 characters');
+    if (!isStrongPassword(newPassword)) {
+      throw new Error(validationMessages.password);
     }
 
     mockPasswords.set(user.username, newPassword);

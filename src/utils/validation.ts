@@ -1,13 +1,17 @@
 export const validationPatterns = {
   personName: /^[A-Za-z][A-Za-z' -]{1,49}$/,
   username: /^[A-Za-z][A-Za-z0-9._-]{2,29}$/,
+  employeeUsername: /^[A-Za-z0-9_]{3,30}$/,
+  employeePassword: /^[A-Za-z0-9@#$!%*?&._-]{8,100}$/,
   swiftCode: /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/,
   beneficiaryAccountNumber: /^\d{6,20}$/,
   userAccountNumber: /^\d{6,10}$/,
   country: /^[A-Za-z][A-Za-z .'-]{1,55}$/,
   bankName: /^[A-Za-z0-9][A-Za-z0-9 .,'&()/-]{1,79}$/,
   paymentReference: /^[A-Za-z0-9][A-Za-z0-9 ._/#-]{2,34}$/,
+  phone: /^\+?[0-9 ()-]{7,20}$/,
   idNumber: /^\d{13}$/,
+  rejectionReason: /^[A-Za-z0-9][A-Za-z0-9 .,'&()/_#:-]{4,249}$/,
 };
 
 export const passwordRules = [
@@ -37,6 +41,8 @@ export const isValidPaymentAmount = (amount: string | number) => {
 export const validationMessages = {
   personName: 'Use 2 to 50 letters, spaces, hyphens, or apostrophes only',
   username: 'Use 3 to 30 characters, start with a letter, and only use letters, numbers, dots, underscores, or hyphens',
+  employeeUsername: 'Use 3 to 30 characters and only use letters, numbers, or underscores',
+  employeePassword: 'Use 8 to 100 characters and only use letters, numbers, or @ # $ ! % * ? & . _ - symbols',
   password: 'Password must meet all strength requirements',
   userAccountNumber: 'Account number must contain 6 to 10 digits and be no higher than 2147483647',
   beneficiaryAccountNumber: 'Account number must contain 6 to 20 digits only',
@@ -44,6 +50,8 @@ export const validationMessages = {
   country: 'Country may contain letters, spaces, dots, hyphens, and apostrophes only',
   bankName: 'Bank name contains unsupported characters',
   paymentReference: 'Use 3 to 35 letters, numbers, spaces, dots, underscores, slashes, hashes, or hyphens',
+  phone: 'Enter a valid phone number using 7 to 20 digits, spaces, brackets, hyphens, or a leading plus',
   amount: 'Amount must be between 1.00 and 1,000,000.00',
   idNumber: 'Enter a valid 13-digit South African ID number',
+  rejectionReason: 'Use 5 to 250 characters with letters, numbers, spaces, and basic punctuation only',
 };

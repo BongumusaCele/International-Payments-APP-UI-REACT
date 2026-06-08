@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { Payment, PaymentCreateRequest, PaymentSummary } from '../../types';
 import { paymentApi } from '../../services/paymentApi';
+import { logout } from './authSlice';
 
 interface PaymentState {
   items: Payment[];
@@ -41,6 +42,14 @@ const initialState: PaymentState = {
   summary: null,
   loading: false,
   error: null,
+};
+
+const resetPaymentState = (state: PaymentState) => {
+  state.items = [];
+  state.selectedPayment = null;
+  state.summary = null;
+  state.loading = false;
+  state.error = null;
 };
 
 const paymentSlice = createSlice({
@@ -97,6 +106,15 @@ const paymentSlice = createSlice({
       })
       .addCase(fetchPaymentSummary.rejected, (state, action) => {
         state.error = action.error.message || state.error;
+      })
+      .addCase(logout.pending, (state) => {
+        resetPaymentState(state);
+      })
+      .addCase(logout.fulfilled, (state) => {
+        resetPaymentState(state);
+      })
+      .addCase(logout.rejected, (state) => {
+        resetPaymentState(state);
       });
   },
 });

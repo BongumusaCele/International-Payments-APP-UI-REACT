@@ -1,7 +1,5 @@
 import { LoginRequest, LoginResult, RegisterRequest, RegisterResult, VerifyMfaRequest } from '../types';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-  || 'https://international-payments-api-effxgrgvhwg3afgq.southafricanorth-01.azurewebsites.net';
+import { API_BASE_URL } from './apiConfig';
 
 interface ApiRegisterResponse {
   success: boolean;

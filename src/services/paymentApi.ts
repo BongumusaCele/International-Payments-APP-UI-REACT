@@ -1,7 +1,5 @@
 import { Payment, PaymentCreateRequest, PaymentSummary } from '../types';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-  || 'https://international-payments-api-effxgrgvhwg3afgq.southafricanorth-01.azurewebsites.net';
+import { API_BASE_URL } from './apiConfig';
 
 const authHeaders = (): Record<string, string> => {
   const token = sessionStorage.getItem('token');

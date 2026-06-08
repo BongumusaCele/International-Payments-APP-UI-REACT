@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { Beneficiary, BeneficiaryRequest } from '../../types';
 import { beneficiaryApi } from '../../services/beneficiaryApi';
+import { logout } from './authSlice';
 
 interface BeneficiaryState {
   items: Beneficiary[];
@@ -47,6 +48,12 @@ const initialState: BeneficiaryState = {
   items: [],
   loading: false,
   error: null,
+};
+
+const resetBeneficiaryState = (state: BeneficiaryState) => {
+  state.items = [];
+  state.loading = false;
+  state.error = null;
 };
 
 const beneficiarySlice = createSlice({
@@ -109,6 +116,15 @@ const beneficiarySlice = createSlice({
       .addCase(deleteBeneficiary.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to delete beneficiary';
+      })
+      .addCase(logout.pending, (state) => {
+        resetBeneficiaryState(state);
+      })
+      .addCase(logout.fulfilled, (state) => {
+        resetBeneficiaryState(state);
+      })
+      .addCase(logout.rejected, (state) => {
+        resetBeneficiaryState(state);
       });
   },
 });

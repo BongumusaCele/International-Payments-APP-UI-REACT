@@ -67,13 +67,38 @@ export const changePassword = createAsyncThunk(
   }
 );
 
+const readStoredUser = (): User | null => {
+  const storedUser = sessionStorage.getItem('user');
+  if (!storedUser) return null;
+
+  try {
+    return JSON.parse(storedUser) as User;
+  } catch {
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    return null;
+  }
+};
+
+const storedUser = readStoredUser();
+const storedToken = sessionStorage.getItem('token');
+
 const initialState: AuthState = {
-  user: sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')!) : null,
-  isAuthenticated: !!sessionStorage.getItem('token'),
-  token: sessionStorage.getItem('token'),
+  user: storedUser,
+  isAuthenticated: !!storedUser && !!storedToken,
+  token: storedUser ? storedToken : null,
   mfaChallengeId: null,
   loading: false,
   error: null,
+};
+
+const resetAuthSession = (state: AuthState) => {
+  state.user = null;
+  state.token = null;
+  state.mfaChallengeId = null;
+  state.isAuthenticated = false;
+  state.loading = false;
+  state.error = null;
 };
 
 const authSlice = createSlice({
@@ -131,12 +156,14 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || 'Registration failed';
       })
+      .addCase(logout.pending, (state) => {
+        resetAuthSession(state);
+      })
       .addCase(logout.fulfilled, (state) => {
-        state.user = null;
-        state.token = null;
-        state.mfaChallengeId = null;
-        state.isAuthenticated = false;
-        state.error = null;
+        resetAuthSession(state);
+      })
+      .addCase(logout.rejected, (state) => {
+        resetAuthSession(state);
       })
       .addCase(updateProfile.pending, (state) => {
         state.loading = true;
