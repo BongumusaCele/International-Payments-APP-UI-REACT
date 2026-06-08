@@ -56,27 +56,34 @@ npm run typecheck
 
 Employees can review transactions, verify payee/SWIFT details, and submit verified payments to a simulated SWIFT flow.
 
-## CI/CD
+## DevSecOps Pipeline Setup
 
-GitHub Actions deploys the frontend to Azure App Service after quality checks pass.
+The frontend and backend both use GitHub Actions for build/security/deployment and CircleCI for SonarCloud quality analysis.
 
-Required GitHub settings:
+| Area | Frontend | Backend |
+| --- | --- | --- |
+| Main toolchain | Node.js 20, npm, Vite, TypeScript, ESLint | .NET 10 SDK, ASP.NET Core, NuGet |
+| GitHub Actions | `.github/workflows/devsecops.yml` | Backend repo `.github/workflows/devsecops.yml` |
+| CircleCI | `.circleci/config.yml` | Backend repo `.circleci/config.yml` |
+| SonarCloud config | `sonar-project.properties` | Backend repo `sonar-project.properties` |
+| Security checks | `npm audit`, ESLint, TypeScript, CodeQL, dependency review | NuGet vulnerability scan, middleware check, CodeQL, dependency review |
+| Deployment target | Azure App Service frontend | Azure App Service backend API |
 
-| Type | Name |
+Required GitHub repository settings for each deployable app:
+
+| Type | Name | Notes |
+| --- | --- | --- |
+| Repository variable | `AZURE_WEBAPP_NAME` | Azure App Service name for that repo |
+| Repository secret | `AZURE_WEBAPP_PUBLISH_PROFILE` | Download from Azure App Service publish profile |
+| Repository variable, frontend only | `VITE_API_BASE_URL` | Optional API URL override |
+
+Required CircleCI environment variable for both repos:
+
+| Name | Purpose |
 | --- | --- |
-| Repository variable | `AZURE_WEBAPP_NAME` |
-| Repository secret | `AZURE_WEBAPP_PUBLISH_PROFILE` |
-| Repository variable, optional | `VITE_API_BASE_URL` |
+| `SONAR_TOKEN` | Allows CircleCI to publish analysis to SonarCloud/SonarQube |
 
-CircleCI runs dependency audit, linting, TypeScript checks, build, and SonarCloud/SonarQube analysis.
-
-Required CircleCI environment variable:
-
-| Name |
-| --- |
-| `SONAR_TOKEN` |
-
-SonarCloud project settings are in `sonar-project.properties`.
+Tool declarations are intentionally kept in the pipeline files so CI remains the source of truth for versions and checks.
 
 ## More Docs
 
