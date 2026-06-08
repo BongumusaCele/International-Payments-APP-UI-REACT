@@ -38,6 +38,29 @@ export const isValidPaymentAmount = (amount: string | number) => {
   return Number.isFinite(numericAmount) && numericAmount >= 1 && numericAmount <= 1_000_000;
 };
 
+export const isValidEmail = (email: string) => {
+  if (email.length > 254 || email.includes(' ')) return false;
+
+  const parts = email.split('@');
+  if (parts.length !== 2) return false;
+
+  const [localPart, domain] = parts;
+  if (!localPart || !domain || localPart.length > 64 || domain.length > 253) return false;
+  if (!domain.includes('.')) return false;
+
+  const domainLabels = domain.split('.');
+  return domainLabels.every((label) => {
+    if (!label || label.length > 63) return false;
+    if (label.startsWith('-') || label.endsWith('-')) return false;
+
+    return Array.from(label).every((character) =>
+      character === '-' || (character >= '0' && character <= '9')
+      || (character >= 'A' && character <= 'Z')
+      || (character >= 'a' && character <= 'z')
+    );
+  });
+};
+
 export const validationMessages = {
   personName: 'Use 2 to 50 letters, spaces, hyphens, or apostrophes only',
   username: 'Use 3 to 30 characters, start with a letter, and only use letters, numbers, dots, underscores, or hyphens',

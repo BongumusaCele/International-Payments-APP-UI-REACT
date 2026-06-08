@@ -94,7 +94,6 @@ export const EmployeeLoginPage: React.FC = () => {
           autoComplete="username"
           minLength={3}
           maxLength={30}
-          pattern="\\w{3,30}"
           required
         />
 
@@ -110,7 +109,6 @@ export const EmployeeLoginPage: React.FC = () => {
           autoComplete="current-password"
           minLength={8}
           maxLength={100}
-          pattern="[\\w@#$!%*?&.-]{8,100}"
           rightElement={
             <button
               type="button"

@@ -8,6 +8,7 @@ import { Input } from '../../components/ui/Input';
 import { Alert } from '../../components/ui/Alert';
 import { useNavigate } from 'react-router-dom';
 import {
+  isValidEmail,
   isStrongPassword,
   validationMessages,
   validationPatterns,
@@ -75,7 +76,7 @@ export const ProfilePage: React.FC = () => {
     else if (!validationPatterns.personName.test(fullName)) newErrors.fullName = validationMessages.personName;
 
     if (!email) newErrors.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Enter a valid email address';
+    else if (!isValidEmail(email)) newErrors.email = 'Enter a valid email address';
 
     if (phone && !validationPatterns.phone.test(phone)) newErrors.phone = validationMessages.phone;
 
